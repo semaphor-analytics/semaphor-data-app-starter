@@ -1,11 +1,13 @@
 import {
   CheckCircle2Icon,
+  ChartColumnIcon,
   DatabaseIcon,
   FileCode2Icon,
   LayoutDashboardIcon,
   SparklesIcon,
 } from "lucide-react"
 import { SemaphorDataAppProvider } from "react-semaphor/data-app-sdk"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -17,9 +19,52 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@/components/ui/progress"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const runtimeToken = import.meta.env.VITE_SEMAPHOR_PROJECT_TOKEN
+
+const componentPreviewData = [
+  { area: "queries", readiness: 68 },
+  { area: "filters", readiness: 82 },
+  { area: "tables", readiness: 74 },
+  { area: "charts", readiness: 58 },
+]
+
+const componentPreviewConfig = {
+  readiness: {
+    label: "Component coverage",
+    color: "var(--chart-1)",
+  },
+} satisfies ChartConfig
 
 const nextSteps = [
   {
@@ -46,6 +91,115 @@ const nextSteps = [
     icon: FileCode2Icon,
   },
 ]
+
+function ComponentKitPreview() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Interactive components included</CardTitle>
+        <CardDescription>
+          These are UI building blocks for the agent to reuse after it grounds
+          the app in real Semaphor metadata.
+        </CardDescription>
+        <CardAction>
+          <Tooltip>
+            <TooltipTrigger render={<Badge variant="outline" />}>
+              Ready
+            </TooltipTrigger>
+            <TooltipContent>
+              Components are installed as source in this repo.
+            </TooltipContent>
+          </Tooltip>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="controls">
+          <TabsList>
+            <TabsTrigger value="controls">Controls</TabsTrigger>
+            <TabsTrigger value="visuals">Visuals</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+          </TabsList>
+
+          <div className="rounded-2xl border p-4">
+            <TabsContent value="controls" className="flex flex-col gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="starter-search">Search or filter</Label>
+                  <Input
+                    id="starter-search"
+                    placeholder="Agent can bind this to Semaphor inputs"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="starter-view-type">View type</Label>
+                  <Select
+                    items={[
+                      { label: "KPI", value: "kpi" },
+                      { label: "Trend", value: "trend" },
+                      { label: "Table", value: "table" },
+                    ]}
+                    defaultValue="trend"
+                  >
+                    <SelectTrigger id="starter-view-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="kpi">KPI</SelectItem>
+                        <SelectItem value="trend">Trend</SelectItem>
+                        <SelectItem value="table">Table</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Progress value={35}>
+                <ProgressLabel>Authoring progress</ProgressLabel>
+                <ProgressValue />
+              </Progress>
+            </TabsContent>
+
+            <TabsContent value="visuals" className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ChartColumnIcon />
+                Static component preview. Replace with governed Semaphor query
+                results.
+              </div>
+              <ChartContainer
+                config={componentPreviewConfig}
+                className="h-56 w-full"
+              >
+                <BarChart accessibilityLayer data={componentPreviewData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="area"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar
+                    dataKey="readiness"
+                    fill="var(--color-readiness)"
+                    radius={6}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </TabsContent>
+
+            <TabsContent value="notes" className="flex flex-col gap-2">
+              <Label htmlFor="starter-notes">Agent handoff notes</Label>
+              <Textarea
+                id="starter-notes"
+                placeholder="Use this space for dashboard scope, filters, and Semaphor publish notes."
+              />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </CardContent>
+    </Card>
+  )
+}
 
 function AppShell() {
   return (
@@ -111,6 +265,8 @@ function AppShell() {
           })}
         </section>
 
+        <ComponentKitPreview />
+
         <Card>
           <CardHeader>
             <CardTitle>Placeholder app surface</CardTitle>
@@ -157,7 +313,9 @@ function AppShell() {
 export function App() {
   return (
     <SemaphorDataAppProvider token={runtimeToken}>
-      <AppShell />
+      <TooltipProvider>
+        <AppShell />
+      </TooltipProvider>
     </SemaphorDataAppProvider>
   )
 }

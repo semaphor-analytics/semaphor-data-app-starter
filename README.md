@@ -9,6 +9,8 @@ This template includes:
 - shadcn/ui using the `b1au68YWO` preset with Base UI primitives
 - `react-semaphor` and `react-semaphor/data-app-sdk`
 - TanStack Table and TanStack Virtual for production table paths
+- shadcn chart, select, input, textarea, progress, tabs, tooltip, table, card,
+  alert, badge, and skeleton components
 - a clean placeholder app surface for agent-generated Semaphor views
 
 The starter is optional. Existing React apps can use the Semaphor Agent Plugin
