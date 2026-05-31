@@ -1,14 +1,14 @@
-import { AlertCircleIcon, CheckCircle2Icon, DatabaseIcon } from "lucide-react"
-import { SemaphorDataAppProvider } from "react-semaphor/data-app-sdk"
 import {
-  useSemaphorInputs,
-  useSemaphorQuery,
-} from "react-semaphor/data-app-sdk"
+  CheckCircle2Icon,
+  DatabaseIcon,
+  FileCode2Icon,
+  LayoutDashboardIcon,
+  SparklesIcon,
+} from "lucide-react"
+import { SemaphorDataAppProvider } from "react-semaphor/data-app-sdk"
 
-import { DataAppTable } from "@/components/data-app-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardAction,
@@ -18,86 +18,53 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
-import { regionFilter, starterRowsQuery } from "@/semaphor/starter-query"
-import type { InventoryMovementRow } from "@/semaphor/starter-query"
 
 const runtimeToken = import.meta.env.VITE_SEMAPHOR_PROJECT_TOKEN
-const enableStarterQuery =
-  import.meta.env.VITE_SEMAPHOR_ENABLE_STARTER_QUERY === "true"
 
-const previewRows: InventoryMovementRow[] = [
+const nextSteps = [
   {
-    movement_date: "2026-05-24",
-    region: "North",
-    movement_type: "Inbound",
-    quantity_tons: 1240.4,
+    title: "Inspect Semaphor data",
+    description:
+      "Ask your agent to discover governed domains, datasets, fields, and metrics.",
+    prompt: "What Semaphor data can I use in this project?",
+    icon: DatabaseIcon,
   },
   {
-    movement_date: "2026-05-23",
-    region: "West",
-    movement_type: "Transfer",
-    quantity_tons: 880.2,
+    title: "Plan the dashboard",
+    description:
+      "Decide which views are server-backed, derived, presentation-only, or unsupported.",
+    prompt:
+      "Plan a dashboard first. Show the sources, filters, query kind, and visual for each view.",
+    icon: LayoutDashboardIcon,
   },
   {
-    movement_date: "2026-05-22",
-    region: "South",
-    movement_type: "Outbound",
-    quantity_tons: 760.8,
-  },
-  {
-    movement_date: "2026-05-21",
-    region: "East",
-    movement_type: "Inbound",
-    quantity_tons: 1115.6,
+    title: "Build with SDK hooks",
+    description:
+      "Generate React components using react-semaphor/data-app-sdk and this app shell.",
+    prompt:
+      "Build the planned app in this repo using Semaphor runtime queries.",
+    icon: FileCode2Icon,
   },
 ]
-
-function LiveRowsPanel() {
-  const [regionHandle] = useSemaphorInputs([regionFilter])
-  const result = useSemaphorQuery<InventoryMovementRow>(starterRowsQuery, {
-    inputs: [regionHandle],
-  })
-
-  if (result.isLoading) {
-    return (
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    )
-  }
-
-  if (result.error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircleIcon />
-        <AlertTitle>Semaphor query failed</AlertTitle>
-        <AlertDescription>{result.error.message}</AlertDescription>
-      </Alert>
-    )
-  }
-
-  return <DataAppTable rows={result.records ?? []} />
-}
 
 function AppShell() {
   return (
     <div className="min-h-svh bg-background text-foreground">
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="flex flex-col gap-2">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
+        <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div className="flex max-w-3xl flex-col gap-3">
             <div className="flex items-center gap-2">
               <DatabaseIcon />
-              <Badge variant="secondary">Semaphor Data App</Badge>
+              <Badge variant="secondary">Semaphor Data App Starter</Badge>
             </div>
-            <div>
-              <h1 className="text-3xl font-semibold tracking-normal">
-                Operations dashboard
+            <div className="flex flex-col gap-2">
+              <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">
+                Ready for your Semaphor data
               </h1>
-              <p className="max-w-2xl text-sm text-muted-foreground">
-                Starter layout for governed Semaphor analytics in a React app.
+              <p className="text-sm text-muted-foreground md:text-base">
+                This starter is intentionally blank. Use the Semaphor Agent
+                Plugin to inspect your project data, plan the app, and generate
+                governed React views here.
               </p>
             </div>
           </div>
@@ -106,79 +73,69 @@ function AppShell() {
           </Badge>
         </header>
 
-        {!runtimeToken ? (
-          <Alert>
-            <AlertCircleIcon />
-            <AlertTitle>Project token required</AlertTitle>
-            <AlertDescription>
-              Add VITE_SEMAPHOR_PROJECT_TOKEN to .env.local, then ask your
-              coding agent to inspect Semaphor data and replace the starter
-              query refs.
-            </AlertDescription>
-          </Alert>
-        ) : null}
+        <Alert>
+          {runtimeToken ? <CheckCircle2Icon /> : <SparklesIcon />}
+          <AlertTitle>
+            {runtimeToken ? "Project token detected" : "Add your project token"}
+          </AlertTitle>
+          <AlertDescription>
+            {runtimeToken
+              ? "Open Codex or Claude Code in this repo and ask it to inspect Semaphor data before generating views."
+              : "Copy .env.example to .env.local, add VITE_SEMAPHOR_PROJECT_TOKEN, then restart the dev server."}
+          </AlertDescription>
+        </Alert>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardDescription>Volume</CardDescription>
-              <CardTitle>3,997.0 tons</CardTitle>
-              <CardAction>
-                <Badge variant="secondary">
-                  <CheckCircle2Icon data-icon="inline-start" />
-                  Preview
-                </Badge>
-              </CardAction>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Replace with a Semaphor metric query grounded in your project.
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Largest region</CardDescription>
-              <CardTitle>North</CardTitle>
-              <CardAction>
-                <Badge variant="secondary">KPI</Badge>
-              </CardAction>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Cards should own their query unless a shared-query optimization is
-              intentional.
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardDescription>Runtime mode</CardDescription>
-              <CardTitle>
-                {enableStarterQuery ? "Live query" : "Layout preview"}
-              </CardTitle>
-              <CardAction>
-                <Button variant="outline" size="sm">
-                  Validate
-                </Button>
-              </CardAction>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Enable live starter queries only after replacing placeholder
-              source and field refs.
-            </CardContent>
-          </Card>
+          {nextSteps.map((step, index) => {
+            const Icon = step.icon
+
+            return (
+              <Card key={step.title}>
+                <CardHeader>
+                  <CardDescription>Step {index + 1}</CardDescription>
+                  <CardTitle>{step.title}</CardTitle>
+                  <CardAction>
+                    <Icon />
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                  <p className="text-sm text-muted-foreground">
+                    {step.description}
+                  </p>
+                  <div className="rounded-2xl bg-muted p-3 font-mono text-xs leading-relaxed">
+                    {step.prompt}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </section>
 
         <Card>
           <CardHeader>
-            <CardTitle>Inventory movements</CardTitle>
+            <CardTitle>Placeholder app surface</CardTitle>
             <CardDescription>
-              Sortable table with a displayed total row.
+              Replace this card with the dashboard, workflow, report, or
+              customer-facing analytics view your agent builds from real
+              Semaphor metadata.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {enableStarterQuery && runtimeToken ? (
-              <LiveRowsPanel />
-            ) : (
-              <DataAppTable rows={previewRows} />
-            )}
+            <div className="grid min-h-72 place-items-center rounded-2xl border border-dashed bg-muted/30 p-8 text-center">
+              <div className="flex max-w-lg flex-col items-center gap-4">
+                <LayoutDashboardIcon />
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-xl font-medium">
+                    Your generated app goes here
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Start with discovery and planning. Then let the agent add
+                    real Semaphor queries, filters, loading states, tables,
+                    charts, and publish-ready source.
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -186,10 +143,10 @@ function AppShell() {
 
         <footer className="flex flex-col gap-2 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
           <span>
-            Use the Semaphor Agent Plugin to ground this starter in your data.
+            Built with Vite, shadcn/ui, TanStack Table, and react-semaphor.
           </span>
           <span>
-            Built with Vite, shadcn/ui, TanStack Table, and react-semaphor.
+            Use real Semaphor metadata before adding data-bearing code.
           </span>
         </footer>
       </main>

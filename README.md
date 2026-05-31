@@ -9,7 +9,7 @@ This template includes:
 - shadcn/ui using the `b1au68YWO` preset with Base UI primitives
 - `react-semaphor` and `react-semaphor/data-app-sdk`
 - TanStack Table and TanStack Virtual for production table paths
-- a dashboard shell with loading/error/empty-ready table patterns
+- a clean placeholder app surface for agent-generated Semaphor views
 
 The starter is optional. Existing React apps can use the Semaphor Agent Plugin
 directly without adopting this repo's file layout.
@@ -45,7 +45,7 @@ What Semaphor data can I use in this project?
 Then ask the agent to customize the starter:
 
 ```text
-Use my Semaphor project data to replace the starter dashboard with real KPIs,
+Use my Semaphor project data to replace the placeholder with real KPIs,
 filters, a trend, and a server-backed table.
 ```
 
@@ -56,24 +56,25 @@ Plan the dashboard first. Show which views are server-backed, derived, or not
 supported by the current model.
 ```
 
-## Starter Query
+## Placeholder App Surface
 
-`src/semaphor/starter-query.ts` contains a compile-time example of the
-Semaphor Data App SDK query shape. Its source and field refs are placeholders.
-Ask the Semaphor Agent Plugin to replace them with MCP-discovered project
-metadata before enabling live execution.
+The starter does not ship with dummy metrics, fake rows, or placeholder query
+refs. The first screen is an empty app surface with suggested agent prompts.
+That keeps the initial state honest: the agent should inspect your Semaphor
+project through MCP before adding data-bearing code.
 
-Live execution is off by default:
+Generated views should use public SDK imports such as:
 
-```bash
-VITE_SEMAPHOR_ENABLE_STARTER_QUERY="false"
+```tsx
+import {
+  SemaphorDataAppProvider,
+  semaphor,
+  useSemaphorQuery,
+} from "react-semaphor/data-app-sdk"
 ```
 
-After the query refs are replaced with real Semaphor metadata, set it to:
-
-```bash
-VITE_SEMAPHOR_ENABLE_STARTER_QUERY="true"
-```
+For tables, prefer the installed TanStack Table dependency and Semaphor
+server-side filtering, sorting, and pagination for large result sets.
 
 ## Scripts
 
