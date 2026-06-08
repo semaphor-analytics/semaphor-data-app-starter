@@ -1,5 +1,4 @@
-import { AlertCircleIcon, InboxIcon, RefreshCwIcon } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertTriangleIcon, InboxIcon, RefreshCwIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -82,49 +81,66 @@ export function BlockingError({
   onRetry?: () => void
 }) {
   return (
-    <Alert variant="destructive">
-      <AlertCircleIcon />
-      <AlertTitle>{title}</AlertTitle>
-      <AlertDescription className="flex items-start justify-between gap-3">
-        <span>{message}</span>
-        {onRetry ? (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onRetry}
-            className="gap-1"
-          >
-            <RefreshCwIcon className="size-3.5" />
-            Retry
-          </Button>
-        ) : null}
-      </AlertDescription>
-    </Alert>
-  )
-}
-
-export function InCardError({
-  message,
-  onRetry,
-}: {
-  message: string
-  onRetry?: () => void
-}) {
-  return (
-    <div className="flex flex-col items-start gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm">
-      <div className="flex items-start gap-2 text-destructive">
-        <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
-        <div className="flex flex-col gap-1">
-          <span className="font-medium">This view couldn't load.</span>
-          <span className="text-destructive/80">{message}</span>
-        </div>
+    <div className="flex items-start gap-4 rounded-md border bg-card p-4">
+      <ErrorIconBadge />
+      <div className="flex flex-1 flex-col gap-1 pt-0.5">
+        <span className="text-sm font-medium text-foreground">{title}</span>
+        <span className="text-xs leading-relaxed text-muted-foreground">
+          {message}
+        </span>
       </div>
       {onRetry ? (
-        <Button size="sm" variant="outline" onClick={onRetry} className="gap-1">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onRetry}
+          className="gap-1.5"
+        >
           <RefreshCwIcon className="size-3.5" />
           Retry
         </Button>
       ) : null}
+    </div>
+  )
+}
+
+export function InCardError({
+  title = "This view couldn't load",
+  message,
+  onRetry,
+}: {
+  title?: string
+  message: string
+  onRetry?: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+      <ErrorIconBadge />
+      <div className="flex max-w-sm flex-col gap-1">
+        <span className="text-sm font-medium text-foreground">{title}</span>
+        <span className="text-xs leading-relaxed text-muted-foreground">
+          {message}
+        </span>
+      </div>
+      {onRetry ? (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onRetry}
+          className="mt-1 gap-1.5"
+        >
+          <RefreshCwIcon className="size-3.5" />
+          Retry
+        </Button>
+      ) : null}
+    </div>
+  )
+}
+
+function ErrorIconBadge() {
+  return (
+    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive ring-1 ring-destructive/15">
+      <AlertTriangleIcon className="size-4" />
     </div>
   )
 }
@@ -135,13 +151,15 @@ export function EmptyWithFilters({
   filtersDescription: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-md border border-dashed bg-muted/20 p-8 text-center">
-      <InboxIcon className="size-6 text-muted-foreground" />
-      <div className="flex flex-col gap-1">
-        <span className="text-sm font-medium">
+    <div className="flex flex-col items-center gap-3 py-10 text-center">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground ring-1 ring-border">
+        <InboxIcon className="size-4" />
+      </div>
+      <div className="flex max-w-sm flex-col gap-1">
+        <span className="text-sm font-medium text-foreground">
           No data matches the current filters
         </span>
-        <span className="max-w-sm text-xs text-muted-foreground">
+        <span className="text-xs leading-relaxed text-muted-foreground">
           {filtersDescription}
         </span>
       </div>

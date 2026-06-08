@@ -5,6 +5,12 @@ export type FilterBarItem = {
   label: string
   value: string
   icon?: React.ReactNode
+  /**
+   * When provided, renders this React node in place of the default pill.
+   * Use for interactive controls (date range pickers, multi-select popovers)
+   * that need their own trigger element.
+   */
+  control?: React.ReactNode
 }
 
 type FilterBarProps = {
@@ -15,9 +21,13 @@ type FilterBarProps = {
 export function FilterBar({ items, showClear = true }: FilterBarProps) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-b bg-muted/30 px-8 py-3">
-      {items.map((item) => (
-        <FilterPill key={item.label} {...item} />
-      ))}
+      {items.map((item, index) =>
+        item.control ? (
+          <span key={item.label + index}>{item.control}</span>
+        ) : (
+          <FilterPill key={item.label + index} {...item} />
+        ),
+      )}
       {showClear ? (
         <div className="ml-auto">
           <Button

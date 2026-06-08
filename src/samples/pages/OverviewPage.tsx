@@ -1,16 +1,39 @@
+import { useMemo, useState } from "react"
+import { startOfDay } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import overviewData from "../data/overview.json"
 import { PageHeader } from "../components/PageHeader"
-import { CalendarIcon } from "lucide-react"
 import { FilterBar } from "../components/FilterBar"
 import { KpiStrip } from "../components/KpiStrip"
 import { ChartCard } from "../components/ChartCard"
 import { TrendChart } from "../components/TrendChart"
 import { RankedBarChart } from "../components/RankedBarChart"
 import { DataTable, type Column } from "../components/DataTable"
+import {
+  DateRangePicker,
+  getDateRangeLabel,
+  type DateRange,
+} from "../components/DateRangePicker"
+import { MultiSelectFilter } from "../components/MultiSelectFilter"
+import { SingleSelectFilter } from "../components/SingleSelectFilter"
 import type { AppliedFilter } from "../components/FilterChipStrip"
 import type { KpiFormat } from "../components/KpiCard"
+
+const REGION_OPTIONS = [
+  { label: "North America", value: "north_america" },
+  { label: "EMEA", value: "emea" },
+  { label: "APAC", value: "apac" },
+  { label: "LATAM", value: "latam" },
+  { label: "Middle East", value: "middle_east" },
+  { label: "Africa", value: "africa" },
+]
+
+const SEGMENT_OPTIONS = [
+  { label: "Enterprise", value: "enterprise" },
+  { label: "Mid-market", value: "mid_market" },
+  { label: "SMB", value: "smb" },
+]
 import {
   formatCurrency,
   formatCurrencyCompact,
@@ -36,34 +59,84 @@ type Transaction = {
 
 const data = overviewData
 
-const appliedFilters: AppliedFilter[] = [
-  { label: "Date", value: data.meta.dateRange.label },
-  { label: "Region", value: data.meta.filters.regions.join(", ") },
-  { label: "Segment", value: data.meta.filters.segment },
-]
+const TODAY = startOfDay(new Date(data.meta.dateRange.end))
+const INITIAL_RANGE: DateRange = {
+  from: new Date(data.meta.dateRange.start),
+  to: new Date(data.meta.dateRange.end),
+}
 
 export function OverviewPage() {
+  const [dateRange, setDateRange] = useState<DateRange>(INITIAL_RANGE)
+  const [regions, setRegions] = useState<string[]>(["north_america", "emea"])
+  const [segment, setSegment] = useState<string | null>("enterprise")
+
+  const dateLabel = useMemo(
+    () => getDateRangeLabel(dateRange, TODAY),
+    [dateRange],
+  )
+  const regionLabel = useMemo(() => {
+    if (regions.length === 0) return "All"
+    if (regions.length === 1) {
+      return REGION_OPTIONS.find((r) => r.value === regions[0])?.label ?? "—"
+    }
+    return `${regions.length} selected`
+  }, [regions])
+  const segmentLabel =
+    SEGMENT_OPTIONS.find((s) => s.value === segment)?.label ?? "All"
+
+  const appliedFilters: AppliedFilter[] = [
+    { label: "Date", value: dateLabel },
+    { label: "Region", value: regionLabel },
+    { label: "Segment", value: segmentLabel },
+  ]
+
   return (
     <div className="flex flex-col">
       <PageHeader
         eyebrow="Sales analytics"
         title={data.meta.title}
         subtitle={data.meta.subtitle}
-        dateRangeLabel={data.meta.dateRange.label}
+        dateRangeLabel={dateLabel}
       />
 
       <FilterBar
         items={[
           {
             label: "Date range",
-            value: data.meta.dateRange.label,
-            icon: <CalendarIcon className="size-3.5" />,
+            value: dateLabel,
+            control: (
+              <DateRangePicker
+                value={dateRange}
+                onChange={setDateRange}
+                today={TODAY}
+              />
+            ),
           },
           {
             label: "Region",
-            value: `${data.meta.filters.regions.length} selected`,
+            value: regionLabel,
+            control: (
+              <MultiSelectFilter
+                label="Region"
+                options={REGION_OPTIONS}
+                value={regions}
+                onChange={setRegions}
+              />
+            ),
           },
-          { label: "Segment", value: data.meta.filters.segment },
+          {
+            label: "Segment",
+            value: segmentLabel,
+            control: (
+              <SingleSelectFilter
+                label="Segment"
+                options={SEGMENT_OPTIONS}
+                value={segment}
+                onChange={setSegment}
+                hideSearch
+              />
+            ),
+          },
         ]}
       />
 

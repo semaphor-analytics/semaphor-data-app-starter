@@ -20,7 +20,6 @@ export function FilterChipStrip({ filters, className }: FilterChipStripProps) {
         className,
       )}
     >
-      <span className="font-medium uppercase tracking-wider">Filtered by</span>
       {filters.map((filter) => (
         <span
           key={filter.label}
