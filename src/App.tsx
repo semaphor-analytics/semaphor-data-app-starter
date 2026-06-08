@@ -1,4 +1,6 @@
+import { Link } from "@tanstack/react-router"
 import {
+  ArrowRightIcon,
   CheckCircle2Icon,
   ChartColumnIcon,
   DatabaseIcon,
@@ -238,6 +240,30 @@ function AppShell() {
               : "Copy .env.example to .env.local, add VITE_SEMAPHOR_PROJECT_TOKEN, then restart the dev server."}
           </AlertDescription>
         </Alert>
+
+        <Link to="/samples" className="no-underline">
+          <Card className="transition-colors hover:bg-card/80">
+            <CardHeader>
+              <CardDescription>Reference</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                Explore the dashboard reference
+                <ArrowRightIcon className="size-4" />
+              </CardTitle>
+              <CardAction>
+                <LayoutDashboardIcon />
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                A polished sample dashboard your agent should match: filter
+                visibility on cards, sortable tables with totals, KPI delta
+                patterns, chart vocabulary, and explicit loading/error/empty
+                states. Open <code className="rounded bg-muted px-1 py-0.5 text-xs">/samples</code> to browse the
+                exhibits.
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <section className="grid gap-4 md:grid-cols-3">
           {nextSteps.map((step, index) => {
