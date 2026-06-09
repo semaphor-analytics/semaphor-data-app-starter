@@ -72,9 +72,10 @@ for Semaphor-backed dropdown choices, and `useSemaphorQuery(queries.someView,
 queryOptionsForView.someView(inputHandles))` for view data. Prefer
 `queryOptionsForView` over manually passing `inputsForView` so DevTools traces
 carry the dashboard view title, visual type, query id, and source identity.
-For records/analysis views, map rows through `rowValuesForView.someView(row,
-result.data?.columns)` or resolve keys with `columnKeysForView`; do not read
-`row.semantic_field_name` or `row[visualSpec.encoding.y]` directly.
+For records/analysis views, map rows through
+`rowValuesForView.someView(row, result.columns)` or resolve keys with
+`columnKeysForView`; do not read `row.semantic_field_name` or
+`row[visualSpec.encoding.y]` directly.
 
 Do not define Semaphor sources, fields, query specs, input option specs, or
 filter bindings by hand in `App.tsx` or view components unless the generator
