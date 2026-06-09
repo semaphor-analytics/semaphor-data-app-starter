@@ -120,11 +120,19 @@ of truth for governed analytics.
   visible label can be a name, selected value should be a stable key when
   available, and runtime binding must use the planner-approved field for each
   view.
+- Preserve raw Semaphor option values when adapting to local UI controls. If a
+  shadcn/sample component requires string values, use a local string key for
+  the control and map it back to the original `option.value` before calling
+  `handle.setValue(...)`. Do not write `String(option.value)` back to a
+  Semaphor handle unless the raw option value was already a string.
 - Use `semaphorGeneratedContractMetadata.filterScopeByInput` to decide which
   cards show applied-filter chips.
 - Every affected card/chart/table should show compact applied-filter chips via
   `ChartCard` and `FilterChipStrip`.
 - Do not pass a filter handle to a view unless `inputsForView` does so.
+- Browser-test each visible filter by selecting an option, confirming the
+  trigger label changes, confirming the selected value is not cleared by input
+  option validation, and confirming subscribed cards show applied-filter chips.
 
 ## Layout And Style
 
