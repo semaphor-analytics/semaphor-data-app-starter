@@ -56,9 +56,11 @@ Runtime UI should import generated analytics exports such as:
 ```tsx
 import {
   appInputSpecs,
+  columnKeysForView,
   createInputHandleMap,
   inputOptionQueries,
   inputsForView,
+  rowValuesForView,
   queryOptionsForView,
   queries,
   semaphorGeneratedContractMetadata,
@@ -70,6 +72,9 @@ for Semaphor-backed dropdown choices, and `useSemaphorQuery(queries.someView,
 queryOptionsForView.someView(inputHandles))` for view data. Prefer
 `queryOptionsForView` over manually passing `inputsForView` so DevTools traces
 carry the dashboard view title, visual type, query id, and source identity.
+For records/analysis views, map rows through `rowValuesForView.someView(row,
+result.data?.columns)` or resolve keys with `columnKeysForView`; do not read
+`row.semantic_field_name` or `row[visualSpec.encoding.y]` directly.
 
 Do not define Semaphor sources, fields, query specs, input option specs, or
 filter bindings by hand in `App.tsx` or view components unless the generator
@@ -90,6 +95,8 @@ Use these components before creating new dashboard primitives:
 - `src/components/semaphor/SemaphorFilterControls.tsx`: Semaphor-aware
   adapters over the sample select filters. Use these for generated
   Semaphor-backed filters so raw typed option values are preserved.
+- `src/components/semaphor/server-data-table`: Semaphor server table component
+  for operational, drill-through, exploratory, paginated, or sortable tables.
 - `src/samples/components/ChartCard.tsx`: card shell with title, description,
   action slot, body padding control, and applied-filter chips.
 - `src/samples/components/FilterChipStrip.tsx`: compact per-card applied
@@ -99,8 +106,8 @@ Use these components before creating new dashboard primitives:
 - `src/samples/components/TrendChart.tsx`,
   `src/samples/components/RankedBarChart.tsx`, and
   `src/samples/components/charts/*`: chart presentation.
-- `src/samples/components/DataTable.tsx` and `ServerDataTable.tsx`: table
-  presentation and server-table mechanics.
+- `src/samples/components/DataTable.tsx`: small bounded table presentation.
+- `src/samples/components/ServerDataTable.tsx`: sample-only table demo.
 - `src/samples/components/Matrix.tsx`: matrix/pivot presentation.
 - `src/samples/components/states.tsx`: loading, empty, and error states.
 
@@ -158,6 +165,10 @@ of truth for governed analytics.
   currency, and percentages.
 - Preserve loading, empty, error, and stale/unsupported states for each
   data-bearing component.
+- Use `SemaphorServerDataTable` or `ServerDataTableView` from
+  `src/components/semaphor/server-data-table` for operational/detail/
+  exploratory/paginated/sortable tables. Use the simpler sample `DataTable`
+  only for small bounded top-N or summary tables.
 - Do not add unrelated dependencies when local shadcn/sample components can
   express the UI.
 
