@@ -84,6 +84,9 @@ Use these components before creating new dashboard primitives:
   dropdown.
 - `src/samples/components/SingleSelectFilter.tsx`: searchable or compact
   single-select dropdown.
+- `src/components/semaphor/SemaphorFilterControls.tsx`: Semaphor-aware
+  adapters over the sample select filters. Use these for generated
+  Semaphor-backed filters so raw typed option values are preserved.
 - `src/samples/components/ChartCard.tsx`: card shell with title, description,
   action slot, body padding control, and applied-filter chips.
 - `src/samples/components/FilterChipStrip.tsx`: compact per-card applied
@@ -116,6 +119,9 @@ of truth for governed analytics.
   clearly.
 - Populate Semaphor-backed filter choices through generated
   `inputOptionQueries`, not broad `records` lookup queries.
+- Use `SemaphorMultiSelectFilter` or `SemaphorSingleSelectFilter` from
+  `src/components/semaphor` when connecting Semaphor input handles to the
+  starter select controls.
 - Preserve label/value/runtime-field separation:
   visible label can be a name, selected value should be a stable key when
   available, and runtime binding must use the planner-approved field for each
