@@ -59,6 +59,7 @@ import {
   createInputHandleMap,
   inputOptionQueries,
   inputsForView,
+  queryOptionsForView,
   queries,
   semaphorGeneratedContractMetadata,
 } from "./semaphor/generated"
@@ -66,7 +67,9 @@ import {
 
 Use `useSemaphorInputs(appInputSpecs)` for visible filters, `inputOptionQueries`
 for Semaphor-backed dropdown choices, and `useSemaphorQuery(queries.someView,
-{ inputs: inputsForView.someView(inputHandles) })` for view data.
+queryOptionsForView.someView(inputHandles))` for view data. Prefer
+`queryOptionsForView` over manually passing `inputsForView` so DevTools traces
+carry the dashboard view title, visual type, query id, and source identity.
 
 Do not define Semaphor sources, fields, query specs, input option specs, or
 filter bindings by hand in `App.tsx` or view components unless the generator
