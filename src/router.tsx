@@ -1,4 +1,5 @@
 import {
+  createMemoryHistory,
   createRootRoute,
   createRoute,
   createRouter,
@@ -91,7 +92,27 @@ const routeTree = rootRoute.addChildren([
   ]),
 ])
 
-export const router = createRouter({ routeTree })
+function isSemaphorHostedRuntime() {
+  if (typeof window === "undefined") return false
+
+  // Semaphor injects this runtime object when the published app is loaded
+  // inside the hosted console/embed iframe. In that mode the browser URL belongs
+  // to Semaphor, so the app should use memory history instead of treating the
+  // console path as a TanStack Router route.
+  return Boolean(
+    (window as Window & { __SEMAPHOR_DATA_APP_RUNTIME__?: unknown })
+      .__SEMAPHOR_DATA_APP_RUNTIME__,
+  )
+}
+
+export const router = createRouter(
+  isSemaphorHostedRuntime()
+    ? {
+        routeTree,
+        history: createMemoryHistory({ initialEntries: ["/"] }),
+      }
+    : { routeTree },
+)
 
 declare module "@tanstack/react-router" {
   interface Register {
