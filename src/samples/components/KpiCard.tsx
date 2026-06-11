@@ -2,6 +2,10 @@ import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
+  SemaphorActiveFilterSummaryBadge,
+  type SemaphorActiveFilterSummary,
+} from "@/components/semaphor"
+import {
   formatCurrency,
   formatCurrencyCompact,
   formatDelta,
@@ -20,6 +24,7 @@ export type KpiCardProps = {
   /** Whether an "up" delta is the good direction (revenue=up, churn=down). */
   deltaDirectionGood: "up" | "down"
   previousLabel?: string
+  appliedFilters?: SemaphorActiveFilterSummary[]
 }
 
 export function KpiCard({
@@ -30,6 +35,7 @@ export function KpiCard({
   deltaUnit,
   deltaDirectionGood,
   previousLabel,
+  appliedFilters,
 }: KpiCardProps) {
   const formatted = formatKpiValue(value, format)
   const isFlat = delta === 0
@@ -44,9 +50,15 @@ export function KpiCard({
   return (
     <Card className="gap-3">
       <CardHeader className="pb-0">
-        <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </CardTitle>
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {label}
+          </CardTitle>
+          <SemaphorActiveFilterSummaryBadge
+            filters={appliedFilters ?? []}
+            className="shrink-0"
+          />
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-1.5">
         <div className="text-3xl font-semibold tracking-tight tabular-nums">
