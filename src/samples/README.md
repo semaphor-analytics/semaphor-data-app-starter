@@ -10,6 +10,7 @@ Plugin, the agent is instructed to look here first and match its conventions:
 
 - Page header and filter bar layout
 - KPI strip with delta + comparison context
+- SDK-backed KPI and multi-measure KPI components
 - Trend chart with prev-period comparison
 - Ranked composition view
 - Sortable, bounded data table with a totals row
@@ -23,6 +24,11 @@ network. This sample exists for visual reference and as a structural
 copy-anchor only — **production code must use `useSemaphorQuery`** per
 `react-semaphor/data-app-sdk`. Agents are explicitly told not to copy this
 sample's data-loading pattern.
+
+The KPI and state pages also show Semaphor query-result components with
+result-shaped fixtures. In production, pass the real `useSemaphorQuery` result
+object to `SemaphorMetricKpiCard`, `SemaphorMultiMeasureKpis`, or
+`SemaphorQueryStateBoundary`.
 
 ## Running
 

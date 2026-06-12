@@ -21,7 +21,7 @@ import {
 
 export type DateRange = { from: Date; to: Date }
 
-type PresetKey =
+export type DateRangePresetKey =
   | "last_7_days"
   | "last_30_days"
   | "last_90_days"
@@ -30,7 +30,13 @@ type PresetKey =
   | "year_to_date"
   | "custom"
 
-type Preset = { key: PresetKey; label: string; compute: (today: Date) => DateRange }
+export type DateRangeDefaultPresetKey = Exclude<DateRangePresetKey, "custom">
+
+type Preset = {
+  key: DateRangeDefaultPresetKey
+  label: string
+  compute: (today: Date) => DateRange
+}
 
 const PRESETS: Preset[] = [
   {
@@ -67,11 +73,14 @@ const PRESETS: Preset[] = [
 
 export type DateRangePickerProps = {
   value: DateRange
-  onChange: (next: DateRange, preset: PresetKey) => void
+  onChange: (next: DateRange, preset: DateRangePresetKey) => void
   /** "Today" anchor used for preset math. Defaults to today. */
   today?: Date
   /** Optional explicit label. When omitted, the active preset/range is shown. */
   label?: string
+  /** Text shown when the owning Semaphor input has no active date value. */
+  emptyLabel?: string
+  isValueActive?: boolean
   align?: "start" | "end" | "center"
 }
 
@@ -80,12 +89,14 @@ export function DateRangePicker({
   onChange,
   today = startOfDay(new Date()),
   label = "Date range",
+  emptyLabel = "Any time",
+  isValueActive = true,
   align = "start",
 }: DateRangePickerProps) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<DateRange>(value)
-  const [activePreset, setActivePreset] = useState<PresetKey>(() =>
-    detectPreset(value, today),
+  const [activePreset, setActivePreset] = useState<DateRangePresetKey>(() =>
+    detectPreset(value, today)
   )
 
   function handleOpenChange(nextOpen: boolean) {
@@ -113,7 +124,9 @@ export function DateRangePicker({
     setOpen(false)
   }
 
-  const triggerValue = formatTriggerValue(value, detectPreset(value, today))
+  const triggerValue = isValueActive
+    ? formatTriggerValue(value, detectPreset(value, today))
+    : emptyLabel
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -145,7 +158,7 @@ export function DateRangePicker({
                       "w-full rounded-md px-2.5 py-1.5 text-left text-xs transition-colors",
                       isActive
                         ? "bg-secondary text-foreground"
-                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                     )}
                   >
                     {preset.label}
@@ -159,7 +172,7 @@ export function DateRangePicker({
                   "block px-2.5 py-1.5 text-xs",
                   activePreset === "custom"
                     ? "font-medium text-foreground"
-                    : "text-muted-foreground",
+                    : "text-muted-foreground"
                 )}
               >
                 Custom range
@@ -208,7 +221,14 @@ export function getDateRangeLabel(range: DateRange, today: Date): string {
   return formatTriggerValue(range, detectPreset(range, today))
 }
 
-function detectPreset(range: DateRange, today: Date): PresetKey {
+export function getPresetDateRange(
+  presetKey: DateRangeDefaultPresetKey,
+  today: Date
+): DateRange | undefined {
+  return PRESETS.find((preset) => preset.key === presetKey)?.compute(today)
+}
+
+function detectPreset(range: DateRange, today: Date): DateRangePresetKey {
   for (const preset of PRESETS) {
     const candidate = preset.compute(today)
     if (
@@ -221,7 +241,10 @@ function detectPreset(range: DateRange, today: Date): PresetKey {
   return "custom"
 }
 
-function formatTriggerValue(range: DateRange, preset: PresetKey): string {
+function formatTriggerValue(
+  range: DateRange,
+  preset: DateRangePresetKey
+): string {
   if (preset === "custom") return formatRange(range)
   return PRESETS.find((p) => p.key === preset)?.label ?? formatRange(range)
 }

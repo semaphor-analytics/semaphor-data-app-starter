@@ -1,3 +1,4 @@
+import { SemaphorQueryStateBoundary } from "@/components/semaphor"
 import overviewData from "../data/overview.json"
 import { PageHeader } from "../components/PageHeader"
 import { ChartCard } from "../components/ChartCard"
@@ -123,6 +124,40 @@ export function StatesPage() {
 
         <ExhibitSection
           label="Pattern 5"
+          title="Semaphor query state boundary"
+          description="Wrap data-bearing cards in SemaphorQueryStateBoundary when the view uses useSemaphorQuery. It reads the SDK state fields instead of requiring each card to invent loading, partial, stale, or failed branches."
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ChartCard title="Partial result">
+              <SemaphorQueryStateBoundary
+                state={{
+                  status: "success",
+                  isLoading: false,
+                  isPartial: true,
+                  error: null,
+                }}
+              >
+                <TrendChart data={overviewData.trend} height={180} />
+              </SemaphorQueryStateBoundary>
+            </ChartCard>
+            <ChartCard title="Stale while refreshing">
+              <SemaphorQueryStateBoundary
+                state={{
+                  status: "loading",
+                  isLoading: true,
+                  isStale: true,
+                  records: overviewData.trend,
+                  error: null,
+                }}
+              >
+                <TrendChart data={overviewData.trend} height={180} />
+              </SemaphorQueryStateBoundary>
+            </ChartCard>
+          </div>
+        </ExhibitSection>
+
+        <ExhibitSection
+          label="Pattern 6"
           title="Partial dashboard"
           description="Loaded, loading, and errored states often coexist mid-fetch. The dashboard should render cleanly with all three present at once."
         >

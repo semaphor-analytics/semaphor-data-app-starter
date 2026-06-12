@@ -73,15 +73,49 @@ import {
   semaphor,
   useSemaphorQuery,
 } from "react-semaphor/data-app-sdk"
+import { SemaphorMetricKpiCard } from "@/components/semaphor"
 ```
+
+Use the starter's Semaphor-aware presentation components for query state and
+KPI rendering:
+
+```tsx
+const revenue = useSemaphorQuery(
+  queries.revenue,
+  queryOptionsForView.revenue(inputHandles)
+)
+
+return (
+  <SemaphorMetricKpiCard
+    result={revenue}
+    label="Revenue"
+    format="currency-compact"
+    comparisonLabel="vs previous period"
+  />
+)
+```
+
+`SemaphorQueryStateBoundary` accepts the same query result object and handles
+loading, empty, partial, failed, and stale states. For multi-measure metric
+queries, pass the same result to `SemaphorMultiMeasureKpis`. Query-level metric
+comparisons belong to the primary `result.value`; explicit secondary
+`measureKey` KPI cards do not reuse that comparison badge.
 
 For tables, prefer the installed TanStack Table dependency and Semaphor
 server-side filtering, sorting, and pagination for large result sets.
+
+Date controls should not activate a wall-clock range merely because they
+render. Use shared query `timeWindow` with `timeWindowAnchor: "latest_available"`
+for BI windows unless the user explicitly asks for wall-clock `now`. If the
+planner intentionally wants a visible default date filter, provide it through
+generated input defaults or an explicit `defaultPreset`/`defaultValue` on
+`SemaphorDateRangeFilter`.
 
 ## Scripts
 
 ```bash
 npm run dev
+npm test
 npm run typecheck
 npm run build
 npm run lint

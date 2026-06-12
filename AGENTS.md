@@ -96,6 +96,12 @@ Use these components before creating new dashboard primitives:
 - `src/components/semaphor/SemaphorFilterControls.tsx`: Semaphor-aware
   adapters over the sample select filters. Use these for generated
   Semaphor-backed filters so raw typed option values are preserved.
+- `src/components/semaphor/SemaphorQueryStateBoundary.tsx`: query-result
+  boundary for loading, empty, partial, failed, and stale SDK states.
+- `src/components/semaphor/SemaphorMetricKpis.tsx`: SDK-backed KPI card,
+  comparison badge, and multi-measure KPI components. Use these with
+  `useSemaphorQuery(queries.someView, queryOptionsForView.someView(inputHandles))`
+  results instead of mapping metric payloads into static sample KPI props.
 - `src/components/semaphor/server-data-table`: Semaphor server table component
   for operational, drill-through, exploratory, paginated, or sortable tables.
 - `src/samples/components/ChartCard.tsx`: card shell with title, description,
@@ -128,6 +134,13 @@ of truth for governed analytics.
 - Render dashboard-wide filters in `FilterBar`.
 - Render scoped filters near the section they affect or label their scope
   clearly.
+- Date filters must not set a wall-clock range merely because the control
+  rendered. Leave date inputs inactive unless the generated contract supplies
+  an initial value or the component receives an explicit `defaultPreset` or
+  `defaultValue`.
+- For BI query windows, prefer shared query `timeWindow` with
+  `timeWindowAnchor: "latest_available"`. Use wall-clock `now` only when the
+  user explicitly asks for current-calendar behavior.
 - Populate Semaphor-backed filter choices through generated
   `inputOptionQueries`, not broad `records` lookup queries.
 - Use `SemaphorMultiSelectFilter` or `SemaphorSingleSelectFilter` from
