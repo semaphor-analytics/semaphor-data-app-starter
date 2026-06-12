@@ -13,13 +13,18 @@ The Semaphor Agent Plugin owns analytics mechanics:
   and per-view input bindings under `src/semaphor/generated`.
 - Runtime SDK usage, DevTools, validation, and trace verification.
 
-This starter owns presentation:
+This starter owns application bootstrapping:
 
-- Page shell, dashboard density, spacing, typography, cards, filters, charts,
-  tables, matrix views, loading/error/empty states, and applied-filter chips.
-- Reusable React components under `src/samples/components` and
-  `src/components/ui`.
-- Visual conventions shown by the sample pages under `src/samples/pages`.
+- Semaphor provider setup, DevTools placement, environment variables, Vite
+  wiring, root layout, and the minimal mount surface for generated Data Apps.
+- Local shadcn primitives under `src/components/ui` and any starter-only glue
+  required to run the app.
+
+Reusable Semaphor-specific presentation belongs in the public component
+registry at `/Users/rohit/code/semaphor/semaphor-data-app-components`.
+Use its gallery as the visual source of truth for dashboard density, spacing,
+typography, cards, filters, charts, tables, matrix views, loading/error/empty
+states, and applied-filter chips.
 
 Do not move analytics decisions into presentation components, and do not invent
 Semaphor query/filter wiring in UI files when generated contract exports exist.
@@ -28,10 +33,14 @@ Semaphor query/filter wiring in UI files when generated contract exports exist.
 
 For broad Data App/dashboard builds:
 
-1. Read this file, `README.md`, and `src/samples/README.md`.
-2. Inspect `src/samples/pages/OverviewPage.tsx` for the preferred dashboard
-   structure.
-3. Inspect the specific sample components you plan to reuse.
+1. Read this file and `README.md`.
+2. Open the Semaphor component gallery:
+   `https://semaphor-analytics.github.io/semaphor-data-app-components/`.
+3. Pick the closest gallery sample before designing a layout:
+   executive scorecard, operations table, or matrix drilldown.
+4. Install the required registry components with `create-semaphor-app
+   --components recommended` or the gallery's `npx shadcn@latest add ...`
+   commands.
 4. Use Semaphor MCP/plugin tools to resolve auth, project, domain, and the
    generated analytics contract before writing UI.
 5. Decide the implementation map before the first source edit: component
@@ -81,52 +90,48 @@ Do not define Semaphor sources, fields, query specs, input option specs, or
 filter bindings by hand in `App.tsx` or view components unless the generator
 reported a clear unsupported gap.
 
-## Sample Components To Reuse
+## First-Run Visual Baseline
 
-Use these components before creating new dashboard primitives:
+Do not hand-roll a dashboard from blank cards. For the first generated version,
+compose one of these proven patterns:
 
-- `src/samples/components/PageHeader.tsx`: top page title, subtitle, date badge,
-  and actions.
-- `src/samples/components/FilterBar.tsx`: global or section-level filter row.
-- `src/samples/components/DateRangePicker.tsx`: date-range filter with presets.
-- `src/samples/components/MultiSelectFilter.tsx`: searchable multi-select
-  dropdown.
-- `src/samples/components/SingleSelectFilter.tsx`: searchable or compact
-  single-select dropdown.
-- `src/components/semaphor/SemaphorFilterControls.tsx`: Semaphor-aware
-  adapters over the sample select filters. Use these for generated
-  Semaphor-backed filters so raw typed option values are preserved.
-- `src/components/semaphor/SemaphorQueryStateBoundary.tsx`: query-result
-  boundary for loading, empty, partial, failed, and stale SDK states.
-- `src/components/semaphor/SemaphorMetricKpis.tsx`: SDK-backed KPI card,
-  comparison badge, and multi-measure KPI components. Use these with
+- Executive scorecard: page header, filter bar, KPI row, trend/card grid, and a
+  bounded records table.
+- Operations table: page header, scoped filters, and one server-backed table as
+  the primary workspace.
+- Matrix drilldown: page header, scoped filters, KPI context if useful, and a
+  matrix table as the primary workspace.
+
+Good first-run dashboards are dense, readable, and data-first. Avoid marketing
+heroes, oversized decorative sections, broad gradients, unbounded card grids,
+and custom controls when a registry component exists.
+
+## Registry Components To Reuse
+
+Use the Semaphor component registry before creating new dashboard primitives:
+
+- `query-state-boundary`: query-result boundary for loading, empty, partial,
+  failed, and stale SDK states.
+- `metric-kpis`: SDK-backed KPI card, comparison badge, and multi-measure KPI
+  components. Use these with
   `useSemaphorQuery(queries.someView, queryOptionsForView.someView(inputHandles))`
   results instead of mapping metric payloads into static sample KPI props.
-- `src/components/semaphor/server-data-table`: Semaphor server table component
-  for operational, drill-through, exploratory, paginated, or sortable tables.
-- `src/samples/components/ChartCard.tsx`: card shell with title, description,
-  action slot, body padding control, and applied-filter chips.
-- `src/samples/components/FilterChipStrip.tsx`: compact per-card applied
-  filter affordance.
-- `src/samples/components/KpiStrip.tsx`, `KpiCard.tsx`, `MultiMeasureKpi.tsx`,
-  and `SparklineKpi.tsx`: KPI presentation.
-- `src/samples/components/TrendChart.tsx`,
-  `src/samples/components/RankedBarChart.tsx`, and
-  `src/samples/components/charts/*`: chart presentation.
-- `src/samples/components/DataTable.tsx`: small bounded table presentation.
-- `src/samples/components/ServerDataTable.tsx`: sample-only table demo.
-- `src/samples/components/Matrix.tsx`: matrix/pivot presentation.
-- `src/samples/components/states.tsx`: loading, empty, and error states.
+- `filter-controls`: Semaphor-aware date range, single-select, multi-select,
+  and active filter summary components. Use these for generated
+  Semaphor-backed filters so raw typed option values are preserved.
+- `server-data-table`: Semaphor server table component for operational,
+  drill-through, exploratory, paginated, or sortable tables.
+- `matrix-table`: governed matrix/pivot table for matrix query results.
+- `query-state`: lower-level presentation states for custom non-SDK views.
 
 Use `src/components/ui/*` shadcn primitives for lower-level UI controls.
 
 ## Sample Data Boundary
 
-Files under `src/samples/data` are dummy data for visual examples only.
-
-Agents may copy component structure and styling from samples, but production
+Demo data in the component gallery is for visual examples only. Agents may copy
+layout structure and component composition from gallery samples, but production
 Data App views must use `react-semaphor/data-app-sdk` runtime queries. Do not
-copy sample JSON imports, static arrays, or client-side filtering as the source
+copy demo JSON imports, static arrays, or client-side filtering as the source
 of truth for governed analytics.
 
 ## Filter UX Rules
@@ -143,9 +148,9 @@ of truth for governed analytics.
   user explicitly asks for current-calendar behavior.
 - Populate Semaphor-backed filter choices through generated
   `inputOptionQueries`, not broad `records` lookup queries.
-- Use `SemaphorMultiSelectFilter` or `SemaphorSingleSelectFilter` from
-  `src/components/semaphor` when connecting Semaphor input handles to the
-  starter select controls.
+- After installing `filter-controls`, use `SemaphorMultiSelectFilter` or
+  `SemaphorSingleSelectFilter` from the installed registry component when
+  connecting Semaphor input handles to select controls.
 - Preserve label/value/runtime-field separation:
   visible label can be a name, selected value should be a stable key when
   available, and runtime binding must use the planner-approved field for each
@@ -168,8 +173,9 @@ of truth for governed analytics.
 
 - Build the actual dashboard experience as the first screen, not a landing
   page.
-- Prefer dense, scannable operational layouts: page header, filter bar, KPI
-  strip, charts, tables, and supporting commentary blocks.
+- Prefer dense, scannable operational layouts from the component gallery: page
+  header, filter bar, KPI strip, charts, tables, and supporting commentary
+  blocks.
 - Keep `App.tsx` focused on provider setup, root DevTools, and high-level
   composition.
 - Put repeated data-bearing cards/views into separate components under a
@@ -179,10 +185,10 @@ of truth for governed analytics.
   currency, and percentages.
 - Preserve loading, empty, error, and stale/unsupported states for each
   data-bearing component.
-- Use `SemaphorServerDataTable` or `ServerDataTableView` from
-  `src/components/semaphor/server-data-table` for operational/detail/
-  exploratory/paginated/sortable tables. Use the simpler sample `DataTable`
-  only for small bounded top-N or summary tables.
+- After installing `server-data-table`, use `SemaphorServerDataTable` or
+  `ServerDataTableView` for operational/detail/exploratory/paginated/sortable
+  tables. Use simple bounded table markup only for small top-N or summary
+  tables.
 - Do not add unrelated dependencies when local shadcn/sample components can
   express the UI.
 

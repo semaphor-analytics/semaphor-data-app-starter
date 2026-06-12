@@ -3,6 +3,9 @@
 A Vite React starter for building Semaphor-backed data apps with Codex, Claude
 Code, or another coding agent.
 
+For the reusable Semaphor UI component gallery, see:
+https://semaphor-analytics.github.io/semaphor-data-app-components/
+
 This template includes:
 
 - React 19, TypeScript, Vite, and Tailwind CSS v4
@@ -12,6 +15,22 @@ This template includes:
 - shadcn chart, select, input, textarea, progress, tabs, tooltip, table, card,
   alert, badge, and skeleton components
 - a clean placeholder app surface for agent-generated Semaphor views
+
+Reusable Semaphor-specific UI helpers are distributed through the
+`semaphor-data-app-components` shadcn registry. Prefer creating new apps with
+`create-semaphor-app --components recommended` when you want those helpers
+installed into the app source.
+
+For a presentable first run, start from the component gallery samples instead
+of hand-rolling dashboard chrome:
+
+```text
+https://semaphor-analytics.github.io/semaphor-data-app-components/
+```
+
+Use the closest sample pattern as the baseline: executive scorecard,
+operations table, or matrix drilldown. The starter should keep Semaphor app
+wiring and DevTools setup; reusable visuals should come from the registry.
 
 The starter is optional. Existing React apps can use the Semaphor Agent Plugin
 directly without adopting this repo's file layout.
@@ -73,11 +92,20 @@ import {
   semaphor,
   useSemaphorQuery,
 } from "react-semaphor/data-app-sdk"
-import { SemaphorMetricKpiCard } from "@/components/semaphor"
 ```
 
-Use the starter's Semaphor-aware presentation components for query state and
-KPI rendering:
+After installing the recommended registry components, use the Semaphor-aware
+presentation components for query state and KPI rendering:
+
+```bash
+npx shadcn@latest add semaphor-analytics/semaphor-data-app-components/metric-kpis
+```
+
+Then import the installed source component:
+
+```tsx
+import { SemaphorMetricKpiCard } from "@/components/semaphor/metric-kpis"
+```
 
 ```tsx
 const revenue = useSemaphorQuery(
