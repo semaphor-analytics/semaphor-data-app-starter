@@ -1,7 +1,7 @@
+import { Link } from "@tanstack/react-router"
 import {
   CheckCircle2Icon,
   DatabaseIcon,
-  ExternalLinkIcon,
   FileCode2Icon,
   LayoutDashboardIcon,
   SparklesIcon,
@@ -10,6 +10,7 @@ import { SemaphorDataAppProvider } from "react-semaphor/data-app-sdk"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Card,
   CardAction,
@@ -22,8 +23,6 @@ import { Separator } from "@/components/ui/separator"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 const runtimeToken = import.meta.env.VITE_SEMAPHOR_PROJECT_TOKEN
-const componentGalleryUrl =
-  "https://semaphor-analytics.github.io/semaphor-data-app-components/"
 
 const nextSteps = [
   {
@@ -36,15 +35,15 @@ const nextSteps = [
   {
     title: "Plan the dashboard",
     description:
-      "Choose the closest component gallery sample, then map views to governed queries and filters.",
+      "Choose the closest local sample, then map views to governed queries and filters.",
     prompt:
-      "Plan a dashboard first. Use the component gallery as the visual baseline.",
+      "Plan a dashboard first. Use the local samples as the visual baseline.",
     icon: LayoutDashboardIcon,
   },
   {
     title: "Build with SDK hooks",
     description:
-      "Generate React components using react-semaphor/data-app-sdk and installed registry components.",
+      "Generate React components using react-semaphor/data-app-sdk and included Semaphor components.",
     prompt:
       "Build the planned app in this repo using Semaphor runtime queries.",
     icon: FileCode2Icon,
@@ -67,8 +66,8 @@ function AppShell() {
               </h1>
               <p className="text-sm text-muted-foreground md:text-base">
                 This starter provides app wiring, Semaphor provider setup, and
-                DevTools placement. Reusable visual patterns live in the
-                Semaphor Data App component registry.
+                reusable Semaphor components for query states, filters, KPI
+                cards, tables, matrix views, and scoped view shells.
               </p>
             </div>
           </div>
@@ -93,8 +92,7 @@ function AppShell() {
           <CardHeader>
             <CardDescription>Reference</CardDescription>
             <CardTitle className="flex items-center gap-2">
-              Start from the component gallery
-              <ExternalLinkIcon className="size-4" />
+              Start from the local samples
             </CardTitle>
             <CardAction>
               <LayoutDashboardIcon />
@@ -102,16 +100,20 @@ function AppShell() {
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <p className="text-sm text-muted-foreground">
-              Use the public gallery for polished samples, installable Semaphor
-              components, filter behavior, table patterns, matrix views, query
-              states, and first-run dashboard composition.
+              Browse included sample dashboards for filter behavior, table
+              patterns, matrix views, query states, and first-run dashboard
+              composition. The samples are source files in this project, so
+              agents can inspect and adapt them directly.
             </p>
-            <a
-              href={componentGalleryUrl}
-              className="text-sm font-medium underline underline-offset-4"
+            <Link
+              to="/samples"
+              className={buttonVariants({
+                variant: "outline",
+                className: "w-fit",
+              })}
             >
-              Open the Semaphor Data App component gallery
-            </a>
+              Open local samples
+            </Link>
           </CardContent>
         </Card>
 

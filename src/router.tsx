@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router"
 import { RootLayout } from "./RootLayout"
 import App from "./App"
+import SamplesPage from "./SamplesPage"
 
 const rootRoute = createRootRoute({ component: RootLayout })
 
@@ -15,7 +16,13 @@ const indexRoute = createRoute({
   component: App,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute])
+const samplesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/samples",
+  component: SamplesPage,
+})
+
+const routeTree = rootRoute.addChildren([indexRoute, samplesRoute])
 
 function isSemaphorHostedRuntime() {
   if (typeof window === "undefined") return false

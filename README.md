@@ -14,23 +14,36 @@ This template includes:
 - TanStack Table and TanStack Virtual for production table paths
 - shadcn chart, select, input, textarea, progress, tabs, tooltip, table, card,
   alert, badge, and skeleton components
+- Semaphor-specific query state, view card, filter, KPI, table, and matrix
+  components under `src/components/semaphor`
+- local sample dashboards under `/samples` and `src/samples`
 - a clean placeholder app surface for agent-generated Semaphor views
 
-Reusable Semaphor-specific UI helpers are distributed through the
-`semaphor-data-app-components` shadcn registry. Prefer creating new apps with
-`create-semaphor-app --components recommended` when you want those helpers
-installed into the app source.
-
-For a presentable first run, start from the component gallery samples instead
-of hand-rolling dashboard chrome:
+For a presentable first run, start from the local samples instead of
+hand-rolling dashboard chrome:
 
 ```text
-https://semaphor-analytics.github.io/semaphor-data-app-components/
+npm run dev
+# open /samples
 ```
 
 Use the closest sample pattern as the baseline: executive scorecard,
 operations table, or matrix drilldown. The starter should keep Semaphor app
-wiring and DevTools setup; reusable visuals should come from the registry.
+wiring, DevTools setup, reusable Semaphor visuals, and sample source in one
+project.
+
+For agent and developer implementation guidance, read:
+
+- `AGENTS.md`
+- `DESIGN.md`
+- `docs/semaphor-data-app-guidelines.md`
+
+The public component gallery remains useful for browsing patterns outside a
+generated app:
+
+```text
+https://semaphor-analytics.github.io/semaphor-data-app-components/
+```
 
 The starter is optional. Existing React apps can use the Semaphor Agent Plugin
 directly without adopting this repo's file layout.
@@ -94,14 +107,8 @@ import {
 } from "react-semaphor/data-app-sdk"
 ```
 
-After installing the recommended registry components, use the Semaphor-aware
-presentation components for query state and KPI rendering:
-
-```bash
-npx shadcn@latest add semaphor-analytics/semaphor-data-app-components/metric-kpis
-```
-
-Then import the installed source component:
+Use the included Semaphor-aware presentation components for query state and KPI
+rendering:
 
 ```tsx
 import { SemaphorMetricKpiCard } from "@/components/semaphor/metric-kpis"

@@ -3,6 +3,18 @@
 This starter is a Vite React app for agent-built Semaphor Data Apps. Treat it
 as the local UI and composition reference for generated dashboards.
 
+## Required Reading
+
+Before changing dashboard UI, generated-app composition, Semaphor components,
+samples, filters, tables, matrix views, or SDK wiring, read:
+
+- `README.md`
+- `DESIGN.md`
+- `docs/semaphor-data-app-guidelines.md`
+
+These files are the starter-local source of truth for distribution, visual
+quality, and Semaphor SDK semantics.
+
 ## Core Split
 
 The Semaphor Agent Plugin owns analytics mechanics:
@@ -13,18 +25,21 @@ The Semaphor Agent Plugin owns analytics mechanics:
   and per-view input bindings under `src/semaphor/generated`.
 - Runtime SDK usage, DevTools, validation, and trace verification.
 
-This starter owns application bootstrapping:
+This starter owns application bootstrapping and first-run presentation:
 
 - Semaphor provider setup, DevTools placement, environment variables, Vite
   wiring, root layout, and the minimal mount surface for generated Data Apps.
 - Local shadcn primitives under `src/components/ui` and any starter-only glue
   required to run the app.
+- Semaphor-specific presentation components under `src/components/semaphor`.
+- Local sample dashboards under `src/samples` and `/samples`.
 
-Reusable Semaphor-specific presentation belongs in the public component
-registry at `/Users/rohit/code/semaphor/semaphor-data-app-components`.
-Use its gallery as the visual source of truth for dashboard density, spacing,
-typography, cards, filters, charts, tables, matrix views, loading/error/empty
-states, and applied-filter chips.
+Use the local samples as the visual source of truth for dashboard density,
+spacing, typography, cards, filters, charts, tables, matrix views,
+loading/error/empty states, and applied-filter chips. The public
+`semaphor-data-app-components` gallery is still useful for browsing patterns
+outside this repo, but generated starter apps should not install a second
+component bundle by default.
 
 Do not move analytics decisions into presentation components, and do not invent
 Semaphor query/filter wiring in UI files when generated contract exports exist.
@@ -33,14 +48,11 @@ Semaphor query/filter wiring in UI files when generated contract exports exist.
 
 For broad Data App/dashboard builds:
 
-1. Read this file and `README.md`.
-2. Open the Semaphor component gallery:
-   `https://semaphor-analytics.github.io/semaphor-data-app-components/`.
-3. Pick the closest gallery sample before designing a layout:
+1. Read this file, `README.md`, `DESIGN.md`, and
+   `docs/semaphor-data-app-guidelines.md`.
+2. Run the app locally and open `/samples`.
+3. Pick the closest local sample before designing a layout:
    executive scorecard, operations table, or matrix drilldown.
-4. Install the required registry components with `create-semaphor-app
-   --components recommended` or the gallery's `npx shadcn@latest add ...`
-   commands.
 4. Use Semaphor MCP/plugin tools to resolve auth, project, domain, and the
    generated analytics contract before writing UI.
 5. Decide the implementation map before the first source edit: component
@@ -104,11 +116,12 @@ compose one of these proven patterns:
 
 Good first-run dashboards are dense, readable, and data-first. Avoid marketing
 heroes, oversized decorative sections, broad gradients, unbounded card grids,
-and custom controls when a registry component exists.
+and custom controls when a starter-included Semaphor component exists.
 
-## Registry Components To Reuse
+## Starter Components To Reuse
 
-Use the Semaphor component registry before creating new dashboard primitives:
+Use the starter-included Semaphor components before creating new dashboard
+primitives:
 
 - `query-state-boundary`: query-result boundary for loading, empty, partial,
   failed, and stale SDK states.
@@ -128,11 +141,11 @@ Use `src/components/ui/*` shadcn primitives for lower-level UI controls.
 
 ## Sample Data Boundary
 
-Demo data in the component gallery is for visual examples only. Agents may copy
-layout structure and component composition from gallery samples, but production
-Data App views must use `react-semaphor/data-app-sdk` runtime queries. Do not
-copy demo JSON imports, static arrays, or client-side filtering as the source
-of truth for governed analytics.
+Demo data in `/samples` is for visual examples only. Agents may copy layout
+structure and component composition from local samples, but production Data App
+views must use `react-semaphor/data-app-sdk` runtime queries. Do not copy demo
+JSON imports, static arrays, or client-side filtering as the source of truth for
+governed analytics.
 
 ## Filter UX Rules
 
@@ -148,9 +161,9 @@ of truth for governed analytics.
   user explicitly asks for current-calendar behavior.
 - Populate Semaphor-backed filter choices through generated
   `inputOptionQueries`, not broad `records` lookup queries.
-- After installing `filter-controls`, use `SemaphorMultiSelectFilter` or
-  `SemaphorSingleSelectFilter` from the installed registry component when
-  connecting Semaphor input handles to select controls.
+- Use `SemaphorMultiSelectFilter` or `SemaphorSingleSelectFilter` from
+  `src/components/semaphor/filter-controls` when connecting Semaphor input
+  handles to select controls.
 - Preserve label/value/runtime-field separation:
   visible label can be a name, selected value should be a stable key when
   available, and runtime binding must use the planner-approved field for each
@@ -173,7 +186,7 @@ of truth for governed analytics.
 
 - Build the actual dashboard experience as the first screen, not a landing
   page.
-- Prefer dense, scannable operational layouts from the component gallery: page
+- Prefer dense, scannable operational layouts from local `/samples`: page
   header, filter bar, KPI strip, charts, tables, and supporting commentary
   blocks.
 - Keep `App.tsx` focused on provider setup, root DevTools, and high-level
@@ -185,10 +198,10 @@ of truth for governed analytics.
   currency, and percentages.
 - Preserve loading, empty, error, and stale/unsupported states for each
   data-bearing component.
-- After installing `server-data-table`, use `SemaphorServerDataTable` or
-  `ServerDataTableView` for operational/detail/exploratory/paginated/sortable
-  tables. Use simple bounded table markup only for small top-N or summary
-  tables.
+- Use `SemaphorServerDataTable` or `ServerDataTableView` from
+  `src/components/semaphor/server-data-table` for
+  operational/detail/exploratory/paginated/sortable tables. Use simple bounded
+  table markup only for small top-N or summary tables.
 - Do not add unrelated dependencies when local shadcn/sample components can
   express the UI.
 
