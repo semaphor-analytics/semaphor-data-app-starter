@@ -26,7 +26,14 @@ type CommonSemaphorFilterProps = {
 }
 
 export type SemaphorMultiSelectFilterProps = CommonSemaphorFilterProps &
-  Pick<MultiSelectFilterProps, "emptyLabel" | "searchPlaceholder" | "align">
+  Pick<
+    MultiSelectFilterProps,
+    | "emptyLabel"
+    | "searchPlaceholder"
+    | "selectedDisplay"
+    | "maxSelectedLabels"
+    | "align"
+  >
 
 export type SemaphorSingleSelectFilterProps = CommonSemaphorFilterProps &
   Pick<

@@ -1,10 +1,13 @@
 export {
+  SemaphorClearFiltersButton,
   SemaphorActiveFilterSummaryBadge,
+  clearSemaphorFilterHandles,
   getSemaphorActiveFilterSummaries,
 } from "./active-filter-summary"
 export type {
   SemaphorActiveFilterSummary,
   SemaphorActiveFilterSummaryBadgeProps,
+  SemaphorClearFiltersButtonProps,
 } from "./active-filter-summary"
 export {
   SemaphorDateRangeFilter,
@@ -38,4 +41,3 @@ export { MultiSelectFilter } from "./multi-select-filter"
 export type { FilterOption, MultiSelectFilterProps } from "./multi-select-filter"
 export { SingleSelectFilter } from "./single-select-filter"
 export type { SingleSelectFilterProps } from "./single-select-filter"
-

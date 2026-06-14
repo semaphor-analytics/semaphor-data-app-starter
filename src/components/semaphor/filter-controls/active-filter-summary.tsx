@@ -7,9 +7,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 import { getSemaphorDateRangeFilterLabel } from "./date-range-filter"
+import {
+  createSemaphorOptionAdapter,
+  isSemaphorOptionValue,
+  semaphorOptionValueKey,
+} from "./option-adapter"
 
 export type SemaphorActiveFilterSummary = {
   id: string
@@ -19,6 +25,12 @@ export type SemaphorActiveFilterSummary = {
 
 export type SemaphorActiveFilterSummaryBadgeProps = {
   filters: SemaphorActiveFilterSummary[]
+  className?: string
+}
+
+export type SemaphorClearFiltersButtonProps = {
+  handles: SemaphorInputHandle[]
+  label?: string
   className?: string
 }
 
@@ -33,6 +45,41 @@ export function getSemaphorActiveFilterSummaries(
       value: formatHandleValue(handle),
     }))
     .filter((filter) => filter.value.length > 0)
+}
+
+export function clearSemaphorFilterHandles(
+  handles: SemaphorInputHandle[],
+): number {
+  const activeFilters = handles.filter(
+    (handle) => handle.kind === "filter" && handle.isActive,
+  )
+  for (const handle of activeFilters) {
+    handle.setValue(undefined)
+  }
+  return activeFilters.length
+}
+
+export function SemaphorClearFiltersButton({
+  handles,
+  label = "Clear all",
+  className,
+}: SemaphorClearFiltersButtonProps) {
+  const activeFilterCount = handles.filter(
+    (handle) => handle.kind === "filter" && handle.isActive,
+  ).length
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className={cn("h-6 px-2 text-xs", className)}
+      disabled={activeFilterCount === 0}
+      onClick={() => clearSemaphorFilterHandles(handles)}
+    >
+      {label}
+    </Button>
+  )
 }
 
 export function SemaphorActiveFilterSummaryBadge({
@@ -87,16 +134,55 @@ function formatHandleValue(handle: SemaphorInputHandle): string {
 
   const value = handle.value
   if (Array.isArray(value)) {
-    if (!value.length) {
-      return ""
-    }
-    if (value.length === 1) {
-      return formatScalar(value[0])
-    }
-    return `${value.length} selected`
+    return formatArrayValue(handle, value)
   }
 
+  return formatScalarValue(handle, value)
+}
+
+function formatArrayValue(
+  handle: SemaphorInputHandle,
+  value: unknown[],
+): string {
+  if (!value.length) {
+    return ""
+  }
+  const labelByValue = optionLabelByValue(handle)
+  const labels = value
+    .filter(isSemaphorOptionValue)
+    .map((item) => formatOptionValue(item, labelByValue))
+    .filter((item) => item.length > 0)
+  if (labels.length === 0) {
+    return ""
+  }
+  if (labels.length <= 2) {
+    return labels.join(", ")
+  }
+  return `${labels.length} selected`
+}
+
+function formatScalarValue(
+  handle: SemaphorInputHandle,
+  value: unknown,
+): string {
+  if (isSemaphorOptionValue(value)) {
+    return formatOptionValue(value, optionLabelByValue(handle))
+  }
   return formatScalar(value)
+}
+
+function formatOptionValue(
+  value: string | number | boolean,
+  labelByValue: Map<string, string>,
+): string {
+  return labelByValue.get(semaphorOptionValueKey(value)) ?? formatScalar(value)
+}
+
+function optionLabelByValue(handle: SemaphorInputHandle): Map<string, string> {
+  const adapter = createSemaphorOptionAdapter(handle.options ?? [], {
+    labelContext: [handle.label, handle.id].filter(Boolean).join(" "),
+  })
+  return new Map(adapter.uiOptions.map((option) => [option.value, option.label]))
 }
 
 function formatScalar(value: unknown): string {

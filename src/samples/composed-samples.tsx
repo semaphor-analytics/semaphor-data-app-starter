@@ -16,6 +16,7 @@ import {
 } from "@/components/semaphor/view-card"
 import {
   SemaphorActiveFilterSummaryBadge,
+  SemaphorClearFiltersButton,
   SemaphorDateRangeFilter,
   SemaphorMultiSelectFilter,
   SemaphorSingleSelectFilter,
@@ -234,6 +235,7 @@ export function ExecutiveScorecardSample() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <SemaphorActiveFilterSummaryBadge filters={summaries} />
+          <SemaphorClearFiltersButton handles={handles} />
           <StateSwitcher value={demoState} onChange={setDemoState} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -336,7 +338,6 @@ export function ExecutiveScorecardSample() {
         error={demoState === "error" ? DEMO_ERROR : undefined}
         height={320}
         enableColumnVisibility={false}
-        enableDensityToggle={false}
       />
     </div>
   )

@@ -26,8 +26,6 @@ import {
   ChevronUp,
   Lock,
   RotateCw,
-  Rows2,
-  Rows3,
   SearchX,
   ServerCrash,
   SlidersHorizontal,
@@ -84,8 +82,6 @@ export type {
   ServerDataTableSort,
 } from "./core";
 
-export type ServerDataTableDensity = "comfortable" | "compact";
-
 export type ServerDataTableViewProps<TRow extends ServerDataTableRow = ServerDataTableRow> = {
   title?: string;
   description?: string;
@@ -99,9 +95,7 @@ export type ServerDataTableViewProps<TRow extends ServerDataTableRow = ServerDat
   height?: number;
   pageSizeOptions?: number[];
   stickyFirstColumn?: boolean;
-  defaultDensity?: ServerDataTableDensity;
   enableColumnVisibility?: boolean;
-  enableDensityToggle?: boolean;
   enableKeyboardPaging?: boolean;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
@@ -122,9 +116,7 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
   height = 480,
   pageSizeOptions = [10, 25, 50, 100],
   stickyFirstColumn = true,
-  defaultDensity = "comfortable",
   enableColumnVisibility = true,
-  enableDensityToggle = true,
   enableKeyboardPaging = true,
   onPageChange,
   onPageSizeChange,
@@ -137,7 +129,6 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
   );
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [density, setDensity] = useState<ServerDataTableDensity>(defaultDensity);
 
   const hasLoadedOnceRef = useRef(false);
   if (!loading && !error) hasLoadedOnceRef.current = true;
@@ -227,9 +218,10 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
   const isEmpty = !loading && !error && rows.length === 0;
   const showInlineChrome = !isInitialLoad && !(error && rows.length === 0);
 
-  const headerRowHeight = density === "compact" ? "h-8" : "h-10";
-  const bodyCellPadding = density === "compact" ? "py-1 px-3" : "py-2 px-3";
-  const footerCellPadding = density === "compact" ? "py-1.5 px-3" : "py-2 px-3";
+  // Align table content with the card's 16px header/footer rhythm (px-4).
+  const headerRowHeight = "h-10";
+  const bodyCellPadding = "py-2 px-4";
+  const footerCellPadding = "py-2 px-4";
 
   return (
     <section className="overflow-hidden rounded-lg border bg-card text-card-foreground">
@@ -243,26 +235,6 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {enableDensityToggle ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              aria-label={
-                density === "comfortable" ? "Switch to compact rows" : "Switch to comfortable rows"
-              }
-              title={density === "comfortable" ? "Compact rows" : "Comfortable rows"}
-              onClick={() =>
-                setDensity((current) => (current === "comfortable" ? "compact" : "comfortable"))
-              }
-            >
-              {density === "comfortable" ? (
-                <Rows3 className="size-4" />
-              ) : (
-                <Rows2 className="size-4" />
-              )}
-            </Button>
-          ) : null}
           {enableColumnVisibility ? (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -373,7 +345,7 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
                             }}
                             className={cn(
                               headerRowHeight,
-                              "sticky top-0 z-20 border-b bg-muted/60 px-3 text-foreground backdrop-blur supports-backdrop-filter:bg-muted/60",
+                              "sticky top-0 z-20 border-b bg-muted/60 px-4 text-foreground backdrop-blur supports-backdrop-filter:bg-muted/60",
                               isStickyCol &&
                                 "left-0 z-30 after:absolute after:inset-y-0 after:-right-px after:w-px after:bg-border",
                             )}

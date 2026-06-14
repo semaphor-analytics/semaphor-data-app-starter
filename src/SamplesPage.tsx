@@ -31,6 +31,7 @@ import type { SemaphorInputHandle } from "react-semaphor/data-app-sdk"
 import { SemaphorIcon } from "@/components/semaphor-logo"
 import {
   SemaphorActiveFilterSummaryBadge,
+  SemaphorClearFiltersButton,
   SemaphorDateRangeFilter,
   SemaphorMultiSelectFilter,
   SemaphorSingleSelectFilter,
@@ -157,7 +158,7 @@ const componentItems: ComponentItem[] = [
     category: "Tables",
     icon: Table2Icon,
     summary:
-      "Server-paginated, server-sortable records table with bounded height, totals, density, and column visibility.",
+      "Server-paginated, server-sortable records table with bounded height, totals, and column visibility.",
     bestFor: "Large records results that should stay server-driven.",
     sourcePath: "src/components/semaphor/server-data-table",
     semantics: [
@@ -1018,9 +1019,12 @@ function FilterControlsPreview() {
               values for query execution.
             </CardDescription>
           </div>
-          <SemaphorActiveFilterSummaryBadge
-            filters={getSemaphorActiveFilterSummaries(handles)}
-          />
+          <div className="flex items-center gap-2">
+            <SemaphorActiveFilterSummaryBadge
+              filters={getSemaphorActiveFilterSummaries(handles)}
+            />
+            <SemaphorClearFiltersButton handles={handles} />
+          </div>
         </div>
       </CardHeader>
       <CardContent>

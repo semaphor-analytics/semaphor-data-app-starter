@@ -87,7 +87,7 @@ export function toSingleOptionValue(
 }
 
 export function isSemaphorOptionValue(
-  value: SemaphorInputValue | undefined
+  value: unknown
 ): value is SemaphorOptionValue {
   return (
     typeof value === "string" ||

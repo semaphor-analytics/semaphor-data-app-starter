@@ -30,6 +30,10 @@ export type MultiSelectFilterProps = {
   emptyLabel?: string
   /** Search placeholder. */
   searchPlaceholder?: string
+  /** How selected values are summarized in the trigger. Defaults to labels. */
+  selectedDisplay?: "labels" | "count"
+  /** Maximum selected labels to show before falling back to a count. */
+  maxSelectedLabels?: number
   align?: "start" | "end" | "center"
 }
 
@@ -40,10 +44,16 @@ export function MultiSelectFilter({
   onChange,
   emptyLabel = "All",
   searchPlaceholder,
+  selectedDisplay = "labels",
+  maxSelectedLabels = 2,
   align = "start",
 }: MultiSelectFilterProps) {
   const [open, setOpen] = useState(false)
-  const triggerValue = formatTriggerValue(value, options, emptyLabel)
+  const triggerValue = formatTriggerValue(value, options, {
+    emptyLabel,
+    selectedDisplay,
+    maxSelectedLabels,
+  })
 
   function toggle(optionValue: string) {
     if (value.includes(optionValue)) {
@@ -162,12 +172,21 @@ export function MultiSelectFilter({
 function formatTriggerValue(
   selected: string[],
   options: FilterOption[],
-  emptyLabel: string,
+  config: {
+    emptyLabel: string
+    selectedDisplay: "labels" | "count"
+    maxSelectedLabels: number
+  },
 ): string {
-  if (selected.length === 0) return emptyLabel
-  if (selected.length === 1) {
-    const found = options.find((o) => o.value === selected[0])
-    return found?.label ?? selected[0]
+  if (selected.length === 0) return config.emptyLabel
+  if (
+    config.selectedDisplay === "count" ||
+    selected.length > config.maxSelectedLabels
+  ) {
+    return `${selected.length} selected`
   }
-  return `${selected.length} selected`
+  const labelByValue = new Map(
+    options.map((option) => [option.value, option.label]),
+  )
+  return selected.map((item) => labelByValue.get(item) ?? item).join(", ")
 }
