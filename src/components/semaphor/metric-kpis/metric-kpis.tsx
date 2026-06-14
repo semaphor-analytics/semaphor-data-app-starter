@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { CSSProperties, ReactNode } from "react"
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -207,6 +207,10 @@ export function SemaphorMultiMeasureKpis({
   className,
 }: SemaphorMultiMeasureKpisProps) {
   const metricEntries = resolveMetricEntries(result, measures)
+  const columnCount = Math.min(Math.max(metricEntries.length, 1), 4)
+  const gridStyle = {
+    "--semaphor-kpi-columns": columnCount,
+  } as CSSProperties
 
   return (
     <Card className={className}>
@@ -219,7 +223,10 @@ export function SemaphorMultiMeasureKpis({
       </CardHeader>
       <CardContent>
         <SemaphorQueryStateBoundary state={result}>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-border">
+          <div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(var(--semaphor-kpi-columns),minmax(0,1fr))] sm:gap-0 sm:divide-x sm:divide-border"
+            style={gridStyle}
+          >
             {metricEntries.map((metric, index) => (
               <div
                 key={metric.key}
