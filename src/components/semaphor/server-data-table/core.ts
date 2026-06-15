@@ -6,18 +6,30 @@ import {
 
 export type ServerDataTableColumnAlign = "left" | "right" | "center";
 
-export type ServerDataTableColumn = ServerDataTableColumnShape & {
+type ServerDataTableColumnBase = ServerDataTableColumnShape & {
   description?: string;
-  sortable?: boolean;
   align?: ServerDataTableColumnAlign;
   minWidth?: number;
   maxWidth?: number;
 };
 
+export type ServerDataTableColumn<TSortKey extends string = string> =
+  ServerDataTableColumnBase &
+    (
+      | {
+          sortable: true;
+          sortKey: TSortKey;
+        }
+      | {
+          sortable?: false;
+          sortKey?: never;
+        }
+    );
+
 export type ServerDataTableRow = Record<string, unknown>;
 
-export type ServerDataTableSort = {
-  key: string;
+export type ServerDataTableSort<TSortKey extends string = string> = {
+  key: TSortKey;
   direction: "asc" | "desc";
 };
 
@@ -43,11 +55,12 @@ export type ServerDataTablePaginationSummary = Required<
 
 export function toServerDataTableColumn(
   column: SemaphorResultColumn,
-): ServerDataTableColumn {
+): ServerDataTableColumn<never> {
   return {
     key: column.key,
     label: column.label ?? column.name ?? column.key,
     dataType: column.dataType,
+    sortable: false,
   };
 }
 
@@ -116,7 +129,7 @@ export function buildDisplayedNumericTotalRow<
   TRow extends ServerDataTableRow = ServerDataTableRow,
 >(
   rows: TRow[],
-  columns: ServerDataTableColumn[],
+  columns: readonly ServerDataTableColumn[],
 ): Partial<Record<keyof TRow | string, unknown>> | undefined {
   const totalRow: Record<string, unknown> = {};
   let hasTotal = false;

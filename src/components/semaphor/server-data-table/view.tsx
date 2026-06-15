@@ -82,13 +82,16 @@ export type {
   ServerDataTableSort,
 } from "./core";
 
-export type ServerDataTableViewProps<TRow extends ServerDataTableRow = ServerDataTableRow> = {
+export type ServerDataTableViewProps<
+  TRow extends ServerDataTableRow = ServerDataTableRow,
+  TSortKey extends string = string,
+> = {
   title?: string;
   description?: string;
-  columns: ServerDataTableColumn[];
+  columns: readonly ServerDataTableColumn<TSortKey>[];
   rows: TRow[];
   pagination?: ServerDataTablePagination;
-  sort?: ServerDataTableSort;
+  sort?: ServerDataTableSort<TSortKey>;
   totalRow?: Partial<Record<keyof TRow | string, unknown>>;
   loading?: boolean;
   error?: unknown;
@@ -99,11 +102,14 @@ export type ServerDataTableViewProps<TRow extends ServerDataTableRow = ServerDat
   enableKeyboardPaging?: boolean;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
-  onSortChange?: (sort: ServerDataTableSort | undefined) => void;
+  onSortChange?: (sort: ServerDataTableSort<TSortKey> | undefined) => void;
   onRetry?: () => void;
 };
 
-export function ServerDataTableView<TRow extends ServerDataTableRow = ServerDataTableRow>({
+export function ServerDataTableView<
+  TRow extends ServerDataTableRow = ServerDataTableRow,
+  TSortKey extends string = string,
+>({
   title = "Data table",
   description,
   columns,
@@ -122,7 +128,7 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
   onPageSizeChange,
   onSortChange,
   onRetry,
-}: ServerDataTableViewProps<TRow>) {
+}: ServerDataTableViewProps<TRow, TSortKey>) {
   const sorting = useMemo<SortingState>(
     () => (sort ? [{ id: sort.key, desc: sort.direction === "desc" }] : []),
     [sort],
@@ -137,20 +143,42 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
 
   const columnDefs = useMemo<Array<ColumnDef<TRow>>>(
     () =>
-      columns.map((column) => ({
-        id: column.key,
-        accessorFn: (row) => row[column.key],
-        header: column.label,
-        enableSorting: column.sortable !== false,
-        cell: ({ getValue }) => formatTableCellValue(getValue(), column),
-      })),
+      columns.map((column) => {
+        const tableColumnId = column.sortKey ?? column.key;
+        return {
+          id: tableColumnId,
+          accessorFn: (row) => row[column.key],
+          header: column.label,
+          enableSorting: column.sortable === true,
+          cell: ({ getValue }) => formatTableCellValue(getValue(), column),
+        };
+      }),
+    [columns],
+  );
+
+  const columnsByTableId = useMemo(
+    () => new Map(columns.map((column) => [column.sortKey ?? column.key, column])),
     [columns],
   );
 
   const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
     const nextSorting = typeof updater === "function" ? updater(sorting) : updater;
     const next = nextSorting[0];
-    onSortChange?.(next ? { key: next.id, direction: next.desc ? "desc" : "asc" } : undefined);
+    if (!next) {
+      onSortChange?.(undefined);
+      return;
+    }
+
+    const column = columnsByTableId.get(next.id);
+    if (column?.sortable !== true) {
+      onSortChange?.(undefined);
+      return;
+    }
+
+    onSortChange?.({
+      key: column.sortKey,
+      direction: next.desc ? "desc" : "asc",
+    });
   };
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table is the intended state engine for this registry component.
@@ -249,7 +277,7 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
                   <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {table.getAllLeafColumns().map((column) => {
-                    const def = columns.find((item) => item.key === column.id);
+                    const def = columnsByTableId.get(column.id);
                     return (
                       <DropdownMenuCheckboxItem
                         key={column.id}
@@ -317,7 +345,7 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id} className="bg-muted/40 hover:bg-muted/40">
                       {headerGroup.headers.map((header, headerIndex) => {
-                        const column = columns.find((item) => item.key === header.column.id);
+                        const column = columnsByTableId.get(header.column.id);
                         if (!column) return null;
                         const numeric = isNumericColumn(column);
                         const align: ServerDataTableColumnAlign =
@@ -418,7 +446,7 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
                         className="group/row bg-card data-[state=selected]:bg-muted"
                       >
                         {row.getVisibleCells().map((cell, cellIndex) => {
-                          const column = columns.find((item) => item.key === cell.column.id);
+                          const column = columnsByTableId.get(cell.column.id);
                           if (!column) return null;
                           const numeric = isNumericColumn(column);
                           const align: ServerDataTableColumnAlign =
@@ -460,7 +488,7 @@ export function ServerDataTableView<TRow extends ServerDataTableRow = ServerData
                   <TableFooter>
                     <TableRow className="hover:bg-transparent">
                       {table.getVisibleLeafColumns().map((leaf, index) => {
-                        const column = columns.find((item) => item.key === leaf.id);
+                        const column = columnsByTableId.get(leaf.id);
                         if (!column) return null;
                         const numeric = isNumericColumn(column);
                         const align: ServerDataTableColumnAlign =

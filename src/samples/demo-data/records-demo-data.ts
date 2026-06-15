@@ -14,12 +14,48 @@ export type CampaignOrderRow = ServerDataTableRow & {
 };
 
 export const ordersColumns: ServerDataTableColumn[] = [
-  { key: "order_date", label: "Order Date", dataType: "date" },
-  { key: "campaign_name", label: "Campaign", dataType: "string" },
-  { key: "customer_segment", label: "Segment", dataType: "string" },
-  { key: "orders", label: "Orders", dataType: "number" },
-  { key: "revenue", label: "Revenue", dataType: "number" },
-  { key: "conversion_rate", label: "Conversion Rate", dataType: "number" },
+  {
+    key: "order_date",
+    label: "Order Date",
+    dataType: "date",
+    sortable: true,
+    sortKey: "order_date",
+  },
+  {
+    key: "campaign_name",
+    label: "Campaign",
+    dataType: "string",
+    sortable: true,
+    sortKey: "campaign_name",
+  },
+  {
+    key: "customer_segment",
+    label: "Segment",
+    dataType: "string",
+    sortable: true,
+    sortKey: "customer_segment",
+  },
+  {
+    key: "orders",
+    label: "Orders",
+    dataType: "number",
+    sortable: true,
+    sortKey: "orders",
+  },
+  {
+    key: "revenue",
+    label: "Revenue",
+    dataType: "number",
+    sortable: true,
+    sortKey: "revenue",
+  },
+  {
+    key: "conversion_rate",
+    label: "Conversion Rate",
+    dataType: "number",
+    sortable: true,
+    sortKey: "conversion_rate",
+  },
 ];
 
 const campaigns = ["Spring Pipeline", "Enterprise Expansion", "Partner Launch", "Renewal Push"];
@@ -71,4 +107,3 @@ export function sortRows<TRow extends ServerDataTableRow>(
     return String(leftValue ?? "").localeCompare(String(rightValue ?? "")) * direction;
   });
 }
-

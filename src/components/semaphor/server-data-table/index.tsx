@@ -26,34 +26,42 @@ export type {
   ServerDataTableSort,
 } from "./core";
 
-export type SemaphorServerDataTableQueryState = {
+export type SemaphorServerDataTableQueryState<TSortKey extends string = string> = {
   page: number;
   pageSize: number;
-  sort?: ServerDataTableSort;
+  sort?: ServerDataTableSort<TSortKey>;
 };
 
-export type SemaphorServerDataTableProps<TRow extends ServerDataTableRow = ServerDataTableRow> =
+export type SemaphorServerDataTableProps<
+  TRow extends ServerDataTableRow = ServerDataTableRow,
+  TSortKey extends string = string,
+> =
   Omit<
-    ServerDataTableViewProps<TRow>,
+    ServerDataTableViewProps<TRow, TSortKey>,
     "columns" | "rows" | "pagination" | "sort" | "loading" | "error" | "onPageChange" | "onPageSizeChange" | "onSortChange"
   > & {
-    queryFactory: (state: SemaphorServerDataTableQueryState) => SemaphorRecordsQueryDefinition;
+    queryFactory: (
+      state: SemaphorServerDataTableQueryState<TSortKey>,
+    ) => SemaphorRecordsQueryDefinition;
     options?: SemaphorQueryRuntimeOptions;
     initialPageSize?: number;
-    columns?: ServerDataTableColumn[];
+    columns?: readonly ServerDataTableColumn<TSortKey>[];
   };
 
-export function SemaphorServerDataTable<TRow extends ServerDataTableRow = ServerDataTableRow>({
+export function SemaphorServerDataTable<
+  TRow extends ServerDataTableRow = ServerDataTableRow,
+  TSortKey extends string = string,
+>({
   queryFactory,
   options,
   initialPageSize = 25,
   columns: providedColumns,
   totalRow: providedTotalRow,
   ...viewProps
-}: SemaphorServerDataTableProps<TRow>) {
+}: SemaphorServerDataTableProps<TRow, TSortKey>) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const [sort, setSort] = useState<ServerDataTableSort | undefined>();
+  const [sort, setSort] = useState<ServerDataTableSort<TSortKey> | undefined>();
 
   const query = useMemo(
     () => queryFactory({ page, pageSize, sort }),
