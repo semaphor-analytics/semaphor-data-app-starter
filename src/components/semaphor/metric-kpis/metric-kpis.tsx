@@ -21,6 +21,10 @@ import {
   SemaphorQueryStateBoundary,
   type SemaphorQueryStateLike,
 } from "../query-state-boundary/query-state-boundary"
+import {
+  SemaphorViewFilterBadge,
+  type SemaphorViewFilterSummary,
+} from "../view-card"
 
 type MetricValue = number | string | null | undefined
 type MetricMap = Record<string, MetricValue>
@@ -82,6 +86,8 @@ export type SemaphorMetricKpiCardProps = {
   trend?: number[]
   /** Optional accessory rendered in the header corner (e.g. filter scope). */
   headerAccessory?: ReactNode
+  /** Scoped filters applied to this metric card. Rendered as the standard Semaphor filter badge. */
+  filters?: SemaphorViewFilterSummary[]
   className?: string
 }
 
@@ -95,11 +101,15 @@ export function SemaphorMetricKpiCard({
   comparisonLabel,
   trend,
   headerAccessory,
+  filters,
   className,
 }: SemaphorMetricKpiCardProps) {
   const resolved = resolveMetricValue(result, measureKey)
   const title = label ?? resolved.label ?? result.intent?.label ?? "Metric"
   const showQueryComparison = !measureKey
+  const filterAccessory = filters?.length ? (
+    <SemaphorViewFilterBadge compact filters={filters} />
+  ) : null
 
   return (
     <Card className={cn("gap-3", className)}>
@@ -110,7 +120,14 @@ export function SemaphorMetricKpiCard({
         {description ? (
           <CardDescription className="text-xs">{description}</CardDescription>
         ) : null}
-        {headerAccessory ? <CardAction>{headerAccessory}</CardAction> : null}
+        {headerAccessory || filterAccessory ? (
+          <CardAction>
+            <div className="flex items-center gap-2">
+              {filterAccessory}
+              {headerAccessory}
+            </div>
+          </CardAction>
+        ) : null}
       </CardHeader>
       <CardContent>
         <SemaphorQueryStateBoundary state={result}>
@@ -194,6 +211,8 @@ export type SemaphorMultiMeasureKpisProps = {
   deltaDirectionGood?: "up" | "down"
   /** Optional accessory rendered in the header corner (e.g. filter scope). */
   headerAccessory?: ReactNode
+  /** Scoped filters applied to this metric group. Rendered as the standard Semaphor filter badge. */
+  filters?: SemaphorViewFilterSummary[]
   className?: string
 }
 
@@ -204,6 +223,7 @@ export function SemaphorMultiMeasureKpis({
   measures,
   deltaDirectionGood = "up",
   headerAccessory,
+  filters,
   className,
 }: SemaphorMultiMeasureKpisProps) {
   const metricEntries = resolveMetricEntries(result, measures)
@@ -211,6 +231,9 @@ export function SemaphorMultiMeasureKpis({
   const gridStyle = {
     "--semaphor-kpi-columns": columnCount,
   } as CSSProperties
+  const filterAccessory = filters?.length ? (
+    <SemaphorViewFilterBadge compact filters={filters} />
+  ) : null
 
   return (
     <Card className={className}>
@@ -219,7 +242,14 @@ export function SemaphorMultiMeasureKpis({
         {description ? (
           <CardDescription className="text-xs">{description}</CardDescription>
         ) : null}
-        {headerAccessory ? <CardAction>{headerAccessory}</CardAction> : null}
+        {headerAccessory || filterAccessory ? (
+          <CardAction>
+            <div className="flex items-center gap-2">
+              {filterAccessory}
+              {headerAccessory}
+            </div>
+          </CardAction>
+        ) : null}
       </CardHeader>
       <CardContent>
         <SemaphorQueryStateBoundary state={result}>

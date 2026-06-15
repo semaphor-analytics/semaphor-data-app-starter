@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import type { SemaphorInputHandle } from "react-semaphor/data-app-sdk"
+import type {
+  SemaphorDataAppQueryError,
+  SemaphorInputHandle,
+} from "react-semaphor/data-app-sdk"
 
 import {
   Select,
@@ -11,7 +14,6 @@ import {
 import type { SemaphorQueryStateLike } from "@/components/semaphor/query-state-boundary"
 import {
   SemaphorViewCard,
-  SemaphorViewFilterBadge,
   type SemaphorViewFilterSummary,
 } from "@/components/semaphor/view-card"
 import {
@@ -95,10 +97,12 @@ const DEMO_STATE_OPTIONS: { value: DashboardDemoState; label: string }[] = [
   { value: "empty", label: "Empty" },
 ]
 
-const DEMO_ERROR = {
-  name: "QueryError",
-  message: "The query could not be executed.",
-}
+const DEMO_ERROR = Object.assign(
+  new Error("The query could not be executed."),
+  {
+    kind: "data_app_query_error" as const,
+  },
+) satisfies SemaphorDataAppQueryError
 
 /** Wrap a ready payload in the query-state shape for the selected demo state. */
 function withDemoState(
@@ -257,13 +261,13 @@ export function ExecutiveScorecardSample() {
           format="currency-compact"
           comparisonLabel="vs previous period"
           trend={revenueTrendSpark}
-          headerAccessory={<SemaphorViewFilterBadge compact filters={summaries} />}
+          filters={summaries}
         />
         <SemaphorMultiMeasureKpis
           result={metricResult}
           title="Sales summary"
           description="Related measures from one governed metric result."
-          headerAccessory={<SemaphorViewFilterBadge compact filters={summaries} />}
+          filters={summaries}
           measures={[
             {
               key: "revenue",

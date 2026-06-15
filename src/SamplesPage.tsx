@@ -45,7 +45,6 @@ import { QueryState } from "@/components/semaphor/query-state/query-state"
 import { SemaphorQueryStateBoundary } from "@/components/semaphor/query-state-boundary"
 import {
   SemaphorViewCard,
-  SemaphorViewFilterBadge,
   type SemaphorViewFilterSummary,
 } from "@/components/semaphor/view-card"
 import { Badge } from "@/components/ui/badge"
@@ -864,17 +863,13 @@ function MetricKpisPreview() {
         description="Primary SDK metric value"
         format="currency-compact"
         trend={[612000, 668000, 705000, 742000, 798000, 842500]}
-        headerAccessory={
-          <SemaphorViewFilterBadge compact filters={previewScope} />
-        }
+        filters={previewScope}
       />
       <SemaphorMultiMeasureKpis
         result={metricResult}
         title="Performance summary"
         description="Secondary measures render from result.measures without reusing the primary comparison badge."
-        headerAccessory={
-          <SemaphorViewFilterBadge compact filters={previewScope} />
-        }
+        filters={previewScope}
         measures={[
           {
             key: "revenue",

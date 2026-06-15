@@ -1,11 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type SemaphorQueryRuntimeOptions,
   type SemaphorRecordsQueryDefinition,
   useSemaphorQuery,
 } from "react-semaphor/data-app-sdk";
 import {
-  buildDisplayedNumericTotalRow,
   toServerDataTableColumn,
   toServerDataTablePagination,
   type ServerDataTableColumn,
@@ -59,9 +58,23 @@ export function SemaphorServerDataTable<
   totalRow: providedTotalRow,
   ...viewProps
 }: SemaphorServerDataTableProps<TRow, TSortKey>) {
-  const [page, setPage] = useState(1);
+  const runtimeInputKey = stableRuntimeInputKey(options?.inputs);
+  const [pageState, setPageState] = useState({
+    page: 1,
+    inputKey: runtimeInputKey,
+  });
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [sort, setSort] = useState<ServerDataTableSort<TSortKey> | undefined>();
+  const page = pageState.inputKey === runtimeInputKey ? pageState.page : 1;
+
+  useEffect(() => {
+    if (pageState.inputKey === runtimeInputKey) return;
+
+    // External Semaphor inputs are the server-table cursor boundary. Persist
+    // the new key so clearing filters cannot restore a stale page for an older key.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- this synchronizes local pagination with external query inputs.
+    setPageState({ page: 1, inputKey: runtimeInputKey });
+  }, [pageState.inputKey, runtimeInputKey]);
 
   const query = useMemo(
     () => queryFactory({ page, pageSize, sort }),
@@ -82,9 +95,14 @@ export function SemaphorServerDataTable<
   });
 
   const totalRow = useMemo(
-    () => providedTotalRow ?? buildDisplayedNumericTotalRow(rows, columns),
-    [columns, providedTotalRow, rows],
+    () => providedTotalRow ?? result.totals?.row,
+    [providedTotalRow, result.totals],
   );
+  const totalRowLabel =
+    viewProps.totalRowLabel ??
+    (!providedTotalRow && result.totals?.scope === "filtered_result"
+      ? "Filtered total"
+      : undefined);
 
   return (
     <ServerDataTableView
@@ -94,17 +112,84 @@ export function SemaphorServerDataTable<
       pagination={pagination}
       sort={sort}
       totalRow={totalRow}
+      totalRowLabel={totalRowLabel}
       loading={result.isLoading}
       error={result.error}
-      onPageChange={setPage}
+      onPageChange={(nextPage) => {
+        setPageState({ page: nextPage, inputKey: runtimeInputKey });
+      }}
       onPageSizeChange={(nextPageSize) => {
         setPageSize(nextPageSize);
-        setPage(1);
+        setPageState({ page: 1, inputKey: runtimeInputKey });
       }}
       onSortChange={(nextSort) => {
         setSort(nextSort);
-        setPage(1);
+        setPageState({ page: 1, inputKey: runtimeInputKey });
       }}
     />
   );
+}
+
+function stableRuntimeInputKey(
+  inputs: SemaphorQueryRuntimeOptions["inputs"],
+): string {
+  if (!inputs?.length) return "[]";
+
+  return JSON.stringify(inputs.map((input) => runtimeInputSnapshot(input)));
+}
+
+function runtimeInputSnapshot(
+  input: NonNullable<SemaphorQueryRuntimeOptions["inputs"]>[number],
+) {
+  const toAnalyticsInput = (input as { toAnalyticsInput?: unknown })
+    .toAnalyticsInput;
+  if (typeof toAnalyticsInput === "function") {
+    const activeInput = toAnalyticsInput.call(input) as {
+      inputId?: string;
+      id?: string;
+      kind?: string;
+      value?: unknown;
+      isActive?: boolean;
+      operator?: string;
+      controlRole?: string;
+    };
+    return {
+      id: activeInput.inputId ?? activeInput.id,
+      kind: activeInput.kind,
+      value: activeInput.value,
+      isActive: activeInput.isActive,
+      operator: activeInput.operator,
+      controlRole: activeInput.controlRole,
+    };
+  }
+
+  const snapshot = input as {
+    inputId?: string;
+    id?: string;
+    kind?: string;
+    value?: unknown;
+    defaultValue?: unknown;
+    isActive?: boolean;
+    operator?: string;
+    controlRole?: string;
+    role?: string;
+  };
+  const value = Object.prototype.hasOwnProperty.call(snapshot, "value")
+    ? snapshot.value
+    : snapshot.defaultValue;
+  return {
+    id: snapshot.inputId ?? snapshot.id,
+    kind: snapshot.kind,
+    value,
+    isActive: snapshot.isActive ?? isActiveInputValue(value),
+    operator: snapshot.operator,
+    controlRole: snapshot.controlRole ?? snapshot.role,
+  };
+}
+
+function isActiveInputValue(value: unknown): boolean {
+  if (value == null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return value.trim().length > 0;
+  return true;
 }

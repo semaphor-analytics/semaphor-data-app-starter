@@ -67,6 +67,7 @@ import {
   type ServerDataTablePagination,
   type ServerDataTableRow,
   type ServerDataTableSort,
+  type ServerDataTableTotalRow,
 } from "./core";
 import {
   formatTableCellValue,
@@ -80,6 +81,7 @@ export type {
   ServerDataTablePaginationSummary,
   ServerDataTableRow,
   ServerDataTableSort,
+  ServerDataTableTotalRow,
 } from "./core";
 
 export type ServerDataTableViewProps<
@@ -92,7 +94,8 @@ export type ServerDataTableViewProps<
   rows: TRow[];
   pagination?: ServerDataTablePagination;
   sort?: ServerDataTableSort<TSortKey>;
-  totalRow?: Partial<Record<keyof TRow | string, unknown>>;
+  totalRow?: ServerDataTableTotalRow;
+  totalRowLabel?: string;
   loading?: boolean;
   error?: unknown;
   height?: number;
@@ -117,6 +120,7 @@ export function ServerDataTableView<
   pagination,
   sort,
   totalRow,
+  totalRowLabel = "Total",
   loading = false,
   error,
   height = 480,
@@ -514,7 +518,7 @@ export function ServerDataTableView<
                                 "left-0 z-30 after:absolute after:inset-y-0 after:-right-px after:w-px after:bg-border",
                             )}
                           >
-                            {isLabelCell ? "Total" : formatTableCellValue(value, column)}
+                            {isLabelCell ? totalRowLabel : formatTableCellValue(value, column)}
                           </TableCell>
                         );
                       })}

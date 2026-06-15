@@ -28,6 +28,8 @@ export type ServerDataTableColumn<TSortKey extends string = string> =
 
 export type ServerDataTableRow = Record<string, unknown>;
 
+export type ServerDataTableTotalRow = Partial<Record<string, unknown>>;
+
 export type ServerDataTableSort<TSortKey extends string = string> = {
   key: TSortKey;
   direction: "asc" | "desc";
@@ -53,9 +55,9 @@ export type ServerDataTablePaginationSummary = Required<
   rangeEnd: number;
 };
 
-export function toServerDataTableColumn(
+export function toServerDataTableColumn<TSortKey extends string = never>(
   column: SemaphorResultColumn,
-): ServerDataTableColumn<never> {
+): ServerDataTableColumn<TSortKey> {
   return {
     key: column.key,
     label: column.label ?? column.name ?? column.key,
@@ -130,7 +132,7 @@ export function buildDisplayedNumericTotalRow<
 >(
   rows: TRow[],
   columns: readonly ServerDataTableColumn[],
-): Partial<Record<keyof TRow | string, unknown>> | undefined {
+): ServerDataTableTotalRow | undefined {
   const totalRow: Record<string, unknown> = {};
   let hasTotal = false;
 
@@ -148,6 +150,6 @@ export function buildDisplayedNumericTotalRow<
   }
 
   return hasTotal
-    ? (totalRow as Partial<Record<keyof TRow | string, unknown>>)
+    ? totalRow
     : undefined;
 }
