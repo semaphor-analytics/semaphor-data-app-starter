@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Columns3,
   Rows3,
-  TableProperties,
 } from "lucide-react";
 import type { MatrixGridProjection } from "react-semaphor/data-app-sdk";
 import { Button } from "@/components/ui/button";
@@ -172,12 +171,6 @@ export function MatrixTableView({
             </p>
           ) : null}
         </div>
-        {displayGrid ? (
-          <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-            <TableProperties className="size-3.5" aria-hidden />
-            {displayGrid.rows.length} rows x {displayGrid.columns.length} columns
-          </div>
-        ) : null}
       </div>
 
       <QueryState
