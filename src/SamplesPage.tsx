@@ -259,6 +259,7 @@ export function SamplesPage() {
     })
   const [matrixControls, setMatrixControls] =
     useState<MatrixTableExampleControls>({
+      rowMode: "hierarchy",
       latencyMs: 250,
       errorMode: "none",
     })
@@ -809,9 +810,20 @@ function MatrixTablePreview({
   return (
     <div className="flex flex-col gap-4">
       <PreviewControlsCard
-        description="Adjust the demo matrix response to inspect loading and failure states."
-        columns="md:grid-cols-2"
+        description="Adjust the demo matrix response to inspect row-axis layout, loading, and failure states."
+        columns="md:grid-cols-3"
       >
+        <ControlSelect
+          label="Row axis"
+          value={controls.rowMode}
+          options={["hierarchy", "tabular"]}
+          onValueChange={(value) =>
+            setControls((current) => ({
+              ...current,
+              rowMode: value as MatrixTableExampleControls["rowMode"],
+            }))
+          }
+        />
         <ControlSelect
           label="Latency"
           value={String(controls.latencyMs)}

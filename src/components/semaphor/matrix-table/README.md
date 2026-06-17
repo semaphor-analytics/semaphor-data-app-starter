@@ -3,8 +3,16 @@
 Pivot-style matrix rendering for Semaphor Data Apps.
 
 Use this item when a planned view uses `semaphor.matrix(...)` and the app
-needs a readable cross-tab/pivot table with sticky headers, bounded height,
-loading states, empty states, and error states.
+needs a readable hierarchy table, cross-tab, or pivot table with sticky
+headers, bounded height, loading states, empty states, and error states.
+
+This is the starter's canonical Semaphor matrix component. It supports both
+SDK matrix row-axis layouts:
+
+- hierarchical rows: expandable parent rows render as one compact indented
+  sticky row-header column;
+- flat multi-level rows: each row level renders as its own sticky row-header
+  column, matching tabular pivot-table expectations.
 
 The view includes hierarchy controls for row and column axes:
 
@@ -14,6 +22,10 @@ The view includes hierarchy controls for row and column axes:
 - The matrix header rail exposes `Expand all rows` / `Collapse all rows` and
   `Expand all columns` / `Collapse all columns` affordances with matching ARIA
   labels.
+
+The `/samples` matrix preview includes both row-axis modes so agents can verify
+hierarchical and tabular multi-level matrix rendering before building a
+generated Data App page.
 
 ## Exports
 

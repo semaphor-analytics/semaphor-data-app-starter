@@ -13,6 +13,10 @@ design-system instructions.
   in `src/views`, `src/cards`, `src/sections`, or `src/components`.
 - Use generated `queryOptionsForView.*(inputHandles)` or equivalent generated
   bindings so filters are applied from the contract, not inferred from labels.
+- Treat generated query factories, column-key helpers, row-value helpers, and
+  input-scope metadata as the app's local contract. Components should receive
+  SDK query results and generated helpers; they should not reconstruct source
+  refs, filter bindings, row keys, table sort identities, or matrix cells.
 
 ## Default Semaphor Components Or Equivalent Semantics
 
@@ -60,3 +64,7 @@ they preserve the same Semaphor semantics.
 - Capture DevTools traces and verify that data-bearing views settle.
 - When possible, select at least one filter option and confirm subscribed views
   rerun while unrelated views remain stable.
+- For launch/readiness smoke, include one page or test path that exercises a
+  KPI, records/table view, matrix view, at least one visible filter, and public
+  SDK result state (`isFiltered`, `isEmpty`, `isPartial`, `executionResult`,
+  and column-key row access).

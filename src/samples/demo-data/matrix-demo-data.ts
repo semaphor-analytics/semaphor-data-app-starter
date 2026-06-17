@@ -179,6 +179,11 @@ export const campaignRevenueMatrix: MatrixGridProjection = {
   rows: buildRows(),
 };
 
+export const campaignRevenueFlatRowsMatrix: MatrixGridProjection = {
+  ...campaignRevenueMatrix,
+  rows: buildFlatRows(),
+};
+
 function buildRows(): MatrixGridProjection["rows"] {
   return regions.flatMap((region) => {
     const regionCampaigns = campaigns.filter((campaign) => campaign.region === region.id);
@@ -225,6 +230,37 @@ function buildRows(): MatrixGridProjection["rows"] {
         ),
       })),
     ];
+  });
+}
+
+function buildFlatRows(): MatrixGridProjection["rows"] {
+  return campaigns.map((campaign) => {
+    const region = regions.find((candidate) => candidate.id === campaign.region);
+    const regionPath = rowPathSegment(
+      "region",
+      campaign.region,
+      region?.label ?? campaign.region,
+    );
+    return {
+      id: `row:flat:${campaign.id}`,
+      rowNodeId: `row-node:flat:${campaign.id}`,
+      rowPath: [
+        regionPath,
+        rowPathSegment("campaign", campaign.id, campaign.label),
+      ],
+      depth: 0,
+      label: campaign.label,
+      role: "value" as const,
+      hasChildren: false,
+      cells: columns.map((column) =>
+        matrixCell({
+          rowId: `flat:${campaign.id}`,
+          columnId: column.id,
+          role: column.role === "columnSubtotal" ? "columnSubtotal" : "value",
+          value: valueForColumn(campaign, column.id),
+        }),
+      ),
+    };
   });
 }
 

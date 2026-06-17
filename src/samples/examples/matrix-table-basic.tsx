@@ -2,23 +2,30 @@ import { useEffect, useMemo, useState } from "react"
 import type { MatrixGridProjection } from "react-semaphor/data-app-sdk"
 
 import { MatrixTableView } from "@/components/semaphor/matrix-table/view"
-import { campaignRevenueMatrix } from "@/samples/demo-data/matrix-demo-data"
+import {
+  campaignRevenueFlatRowsMatrix,
+  campaignRevenueMatrix,
+} from "@/samples/demo-data/matrix-demo-data"
 
 export type MatrixTableExampleControls = {
+  rowMode: "hierarchy" | "tabular"
   latencyMs: number
   errorMode: "none" | "network" | "server"
 }
 
 export function MatrixTableBasicExample({
+  rowMode,
   latencyMs,
   errorMode,
 }: MatrixTableExampleControls) {
-  const requestKey = `${latencyMs}|${errorMode}`
+  const requestKey = `${rowMode}|${latencyMs}|${errorMode}`
+  const initialGrid =
+    rowMode === "tabular" ? campaignRevenueFlatRowsMatrix : campaignRevenueMatrix
   const [state, setState] = useState<{
     requestKey: string
     grid: MatrixGridProjection | undefined
     error: unknown
-  }>({ requestKey: "", grid: campaignRevenueMatrix, error: null })
+  }>({ requestKey: "", grid: initialGrid, error: null })
 
   const isCurrent = state.requestKey === requestKey
   const loading = !isCurrent
@@ -27,7 +34,7 @@ export function MatrixTableBasicExample({
   useEffect(() => {
     let active = true
 
-    fetchDemoMatrix({ latencyMs, errorMode })
+    fetchDemoMatrix({ rowMode, latencyMs, errorMode })
       .then((grid) => {
         if (!active) return
         setState({ requestKey, grid, error: null })
@@ -44,12 +51,14 @@ export function MatrixTableBasicExample({
     return () => {
       active = false
     }
-  }, [errorMode, latencyMs, requestKey])
+  }, [errorMode, latencyMs, requestKey, rowMode])
 
   const description = useMemo(
     () =>
-      "Demo data pivot using the same MatrixGridProjection shape returned by Semaphor matrix queries.",
-    [],
+      rowMode === "tabular"
+        ? "Demo data pivot with separate sticky columns for a flat multi-level row axis."
+        : "Demo data pivot with expandable row hierarchy and pivot column hierarchy.",
+    [rowMode],
   )
 
   return (
@@ -65,6 +74,7 @@ export function MatrixTableBasicExample({
 }
 
 function fetchDemoMatrix({
+  rowMode,
   latencyMs,
   errorMode,
 }: MatrixTableExampleControls): Promise<MatrixGridProjection> {
@@ -78,7 +88,11 @@ function fetchDemoMatrix({
         reject({ status: 500, message: "Matrix execution failed" })
         return
       }
-      resolve(campaignRevenueMatrix)
+      resolve(
+        rowMode === "tabular"
+          ? campaignRevenueFlatRowsMatrix
+          : campaignRevenueMatrix,
+      )
     }, latencyMs)
   })
 }

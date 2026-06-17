@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { QueryState } from "../query-state/query-state";
 import {
   MATRIX_DATA_COLUMN_WIDTH,
+  MATRIX_FLAT_ROW_GROUP_WIDTH,
+  MATRIX_FLAT_ROW_LEAF_WIDTH,
   MATRIX_HEADER_ROW_HEIGHT,
   MATRIX_ROW_HEADER_WIDTH,
   formatMatrixCell,
@@ -35,6 +37,14 @@ import {
 } from "./core";
 
 export type { MatrixTableSort } from "./core";
+
+type MatrixRowHeaderLayout = {
+  mode: "hierarchy" | "flat";
+  levels: MatrixGridProjection["rowHeaderLevels"];
+  widths: number[];
+  totalWidth: number;
+  columnCount: number;
+};
 
 export type MatrixTableViewProps = {
   title?: string;
@@ -89,11 +99,18 @@ export function MatrixTableView({
   const rowHeaderLabel =
     displayGrid?.rowHeaderLevels.map((level) => level.label).join(" / ") ||
     "Rows";
+  const rowHeaderLayout = useMemo(
+    () => (displayGrid ? resolveRowHeaderLayout(displayGrid) : undefined),
+    [displayGrid],
+  );
+  const rowHeaderTemplate =
+    rowHeaderLayout?.widths.map((width) => `${width}px`).join(" ") ??
+    `${MATRIX_ROW_HEADER_WIDTH}px`;
   const gridTemplateColumns = displayGrid
-    ? `${MATRIX_ROW_HEADER_WIDTH}px repeat(${displayGrid.columns.length}, minmax(${MATRIX_DATA_COLUMN_WIDTH}px, 1fr))`
+    ? `${rowHeaderTemplate} repeat(${displayGrid.columns.length}, minmax(${MATRIX_DATA_COLUMN_WIDTH}px, 1fr))`
     : undefined;
   const minTableWidth = displayGrid
-    ? MATRIX_ROW_HEADER_WIDTH +
+    ? (rowHeaderLayout?.totalWidth ?? MATRIX_ROW_HEADER_WIDTH) +
       displayGrid.columns.length * MATRIX_DATA_COLUMN_WIDTH
     : undefined;
   const sourceRowById = useMemo(
@@ -119,6 +136,10 @@ export function MatrixTableView({
     !expandableColumnPathKeys.some((key) => collapsedColumnPathKeys.has(key));
   const showAxisControls =
     expandableRowPathKeys.length > 0 || expandableColumnPathKeys.length > 0;
+  const headerRowHeaderLabel =
+    rowHeaderLayout?.mode === "flat" || !showAxisControls
+      ? rowHeaderLabel
+      : "";
   const toggleRowPath = (path: MatrixPathSegment[]) => {
     setCollapsedRowPathKeys((current) =>
       toggleSetValue(current, matrixPathKey(path)),
@@ -192,6 +213,7 @@ export function MatrixTableView({
                   ? renderAxisControlRow({
                       displayGrid,
                       gridTemplateColumns,
+                      rowHeaderLayout,
                       rowHeaderLabel,
                       stickyFirstColumn,
                       hasExpandableRows: expandableRowPathKeys.length > 0,
@@ -207,7 +229,8 @@ export function MatrixTableView({
                   displayGrid,
                   sourceColumns: sourceGrid?.columns ?? [],
                   gridTemplateColumns,
-                  rowHeaderLabel: showAxisControls ? "" : rowHeaderLabel,
+                  rowHeaderLayout,
+                  rowHeaderLabel: headerRowHeaderLabel,
                   stickyFirstColumn,
                   topOffsetRows: showAxisControls ? 1 : 0,
                   collapsedColumnPathKeys,
@@ -217,7 +240,9 @@ export function MatrixTableView({
                   ? renderFlatColumnHeaderRow({
                       displayGrid,
                       gridTemplateColumns,
-                      rowHeaderLabel: showAxisControls ? "" : rowHeaderLabel,
+                      rowHeaderLayout,
+                      rowHeaderLabel: headerRowHeaderLabel,
+                      stickyFirstColumn,
                       topOffsetRows: showAxisControls ? 1 : 0,
                       sort,
                       onSortChange,
@@ -234,43 +259,21 @@ export function MatrixTableView({
                       className="grid"
                       style={{ gridTemplateColumns }}
                     >
-                      <div
-                        role="rowheader"
-                        className={cn(
-                          "sticky left-0 z-40 flex min-h-11 items-center overflow-hidden border-r bg-card px-3 py-2 text-sm",
-                          row.role !== "value" && "bg-muted font-medium",
-                          row.role === "rowGrandTotal" && "bg-muted font-semibold",
-                          stickyFirstColumn &&
-                            "shadow-[1px_0_0_var(--border)]",
-                        )}
-                      >
-                        <div
-                          className="flex min-w-0 items-center gap-2"
-                          style={{ paddingLeft: Math.max(row.depth, 0) * 14 }}
-                        >
-                          <span className="min-w-0 truncate">{row.label}</span>
-                          {sourceRow.hasChildren ? (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="size-6 shrink-0 text-muted-foreground"
-                              aria-label={`${
-                                isRowCollapsed(sourceRow, collapsedRowPathKeys)
-                                  ? "Expand"
-                                  : "Collapse"
-                              } ${row.label}`}
-                              onClick={() => toggleRowPath(sourceRow.rowPath)}
-                            >
-                              {isRowCollapsed(sourceRow, collapsedRowPathKeys) ? (
-                                <ChevronRight className="size-3.5" aria-hidden />
-                              ) : (
-                                <ChevronDown className="size-3.5" aria-hidden />
-                              )}
-                            </Button>
-                          ) : null}
-                        </div>
-                      </div>
+                      {rowHeaderLayout?.mode === "flat" ? (
+                        <FlatRowHeaderCells
+                          row={row}
+                          layout={rowHeaderLayout}
+                          stickyFirstColumn={stickyFirstColumn}
+                        />
+                      ) : (
+                        <HierarchyRowHeaderCell
+                          row={row}
+                          sourceRow={sourceRow}
+                          collapsedRowPathKeys={collapsedRowPathKeys}
+                          stickyFirstColumn={stickyFirstColumn}
+                          onToggleRowPath={toggleRowPath}
+                        />
+                      )}
                       {displayGrid.columns.map((column) => (
                         <MatrixValueCell
                           key={`${row.id}:${column.id}`}
@@ -290,9 +293,185 @@ export function MatrixTableView({
   );
 }
 
+function resolveRowHeaderLayout(grid: MatrixGridProjection): MatrixRowHeaderLayout {
+  const isHierarchical = grid.rows.some((row) => row.hasChildren);
+  const levels = grid.rowHeaderLevels.length
+    ? grid.rowHeaderLevels
+    : [{ id: "rows", label: "Rows", fieldInstanceId: "rows" }];
+  if (!isHierarchical && levels.length > 1) {
+    const widths = levels.map((_, index) =>
+      index === levels.length - 1
+        ? MATRIX_FLAT_ROW_LEAF_WIDTH
+        : MATRIX_FLAT_ROW_GROUP_WIDTH,
+    );
+    return {
+      mode: "flat",
+      levels,
+      widths,
+      totalWidth: widths.reduce((sum, width) => sum + width, 0),
+      columnCount: widths.length,
+    };
+  }
+
+  return {
+    mode: "hierarchy",
+    levels,
+    widths: [MATRIX_ROW_HEADER_WIDTH],
+    totalWidth: MATRIX_ROW_HEADER_WIDTH,
+    columnCount: 1,
+  };
+}
+
+function HeaderRowHeaderCells({
+  layout,
+  label,
+  stickyFirstColumn,
+  top,
+}: {
+  layout: MatrixRowHeaderLayout | undefined;
+  label: string;
+  stickyFirstColumn: boolean;
+  top: number;
+}) {
+  if (layout?.mode === "flat") {
+    return layout.levels.map((level, index) => {
+      const isLast = index === layout.levels.length - 1;
+      return (
+        <div
+          key={level.id}
+          role="columnheader"
+          className={cn(
+            "sticky z-50 flex h-10 items-center overflow-hidden border-b border-r bg-muted px-3 text-xs font-medium text-muted-foreground",
+            stickyFirstColumn && isLast && "shadow-[1px_0_0_var(--border)]",
+          )}
+          style={{
+            left: rowHeaderLeftOffset(layout, index),
+            top,
+            width: layout.widths[index],
+          }}
+          title={level.label}
+        >
+          <span className="min-w-0 truncate">{label ? level.label : ""}</span>
+        </div>
+      );
+    });
+  }
+
+  return (
+    <div
+      role="columnheader"
+      className={cn(
+        "sticky left-0 z-50 flex h-10 items-center overflow-hidden border-b border-r bg-muted px-3 text-xs font-medium text-muted-foreground",
+        stickyFirstColumn && "shadow-[1px_0_0_var(--border)]",
+      )}
+      style={{ top, width: layout?.totalWidth ?? MATRIX_ROW_HEADER_WIDTH }}
+    >
+      <span className="min-w-0 truncate">{label}</span>
+    </div>
+  );
+}
+
+function HierarchyRowHeaderCell({
+  row,
+  sourceRow,
+  collapsedRowPathKeys,
+  stickyFirstColumn,
+  onToggleRowPath,
+}: {
+  row: MatrixGridRow;
+  sourceRow: MatrixGridRow;
+  collapsedRowPathKeys: Set<string>;
+  stickyFirstColumn: boolean;
+  onToggleRowPath: (path: MatrixPathSegment[]) => void;
+}) {
+  return (
+    <div
+      role="rowheader"
+      className={cn(
+        "sticky left-0 z-40 flex min-h-11 items-center overflow-hidden border-r bg-card px-3 py-2 text-sm",
+        row.role !== "value" && "bg-muted font-medium",
+        row.role === "rowGrandTotal" && "bg-muted font-semibold",
+        stickyFirstColumn && "shadow-[1px_0_0_var(--border)]",
+      )}
+      style={{ width: MATRIX_ROW_HEADER_WIDTH }}
+    >
+      <div
+        className="flex min-w-0 items-center gap-2"
+        style={{ paddingLeft: Math.max(row.depth, 0) * 14 }}
+      >
+        <span className="min-w-0 truncate">{row.label}</span>
+        {sourceRow.hasChildren ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-6 shrink-0 text-muted-foreground"
+            aria-label={`${
+              isRowCollapsed(sourceRow, collapsedRowPathKeys)
+                ? "Expand"
+                : "Collapse"
+            } ${row.label}`}
+            onClick={() => onToggleRowPath(sourceRow.rowPath)}
+          >
+            {isRowCollapsed(sourceRow, collapsedRowPathKeys) ? (
+              <ChevronRight className="size-3.5" aria-hidden />
+            ) : (
+              <ChevronDown className="size-3.5" aria-hidden />
+            )}
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function FlatRowHeaderCells({
+  row,
+  layout,
+  stickyFirstColumn,
+}: {
+  row: MatrixGridRow;
+  layout: MatrixRowHeaderLayout;
+  stickyFirstColumn: boolean;
+}) {
+  return layout.levels.map((level, index) => {
+    const segment = row.rowPath[index];
+    const isLast = index === layout.levels.length - 1;
+    const label =
+      segment?.label ??
+      (index === layout.levels.length - 1 ? row.label : "");
+    return (
+      <div
+        key={`${row.id}:${level.id}`}
+        role={isLast ? "rowheader" : "cell"}
+        className={cn(
+          "sticky z-40 flex min-h-11 items-center overflow-hidden border-r bg-card px-3 py-2 text-sm",
+          row.role !== "value" && "bg-muted font-medium",
+          row.role === "rowGrandTotal" && "bg-muted font-semibold",
+          stickyFirstColumn && isLast && "shadow-[1px_0_0_var(--border)]",
+        )}
+        style={{
+          left: rowHeaderLeftOffset(layout, index),
+          width: layout.widths[index],
+        }}
+        title={String(label)}
+      >
+        <span className="min-w-0 truncate">{label}</span>
+      </div>
+    );
+  });
+}
+
+function rowHeaderLeftOffset(layout: MatrixRowHeaderLayout, index: number) {
+  return layout.widths
+    .slice(0, index)
+    .reduce((sum, width) => sum + width, 0);
+}
+
 function renderAxisControlRow({
   displayGrid,
   gridTemplateColumns,
+  rowHeaderLayout,
   rowHeaderLabel,
   stickyFirstColumn,
   hasExpandableRows,
@@ -304,6 +483,7 @@ function renderAxisControlRow({
 }: {
   displayGrid: MatrixGridProjection;
   gridTemplateColumns: string;
+  rowHeaderLayout: MatrixRowHeaderLayout | undefined;
   rowHeaderLabel: string;
   stickyFirstColumn: boolean;
   hasExpandableRows: boolean;
@@ -316,11 +496,15 @@ function renderAxisControlRow({
   return (
     <div role="row" className="grid" style={{ gridTemplateColumns }}>
       <div
-      role="columnheader"
-      className={cn(
+        role="columnheader"
+        className={cn(
           "sticky left-0 top-0 z-50 flex h-10 items-center overflow-hidden border-b border-r bg-muted px-3 text-xs font-medium text-muted-foreground",
           stickyFirstColumn && "shadow-[1px_0_0_var(--border)]",
         )}
+        style={{
+          gridColumn: `span ${rowHeaderLayout?.columnCount ?? 1}`,
+          width: rowHeaderLayout?.totalWidth,
+        }}
       >
         <div className="flex min-w-0 items-center gap-2">
           {hasExpandableRows ? (
@@ -361,6 +545,7 @@ function renderHeaderRows({
   displayGrid,
   sourceColumns,
   gridTemplateColumns,
+  rowHeaderLayout,
   rowHeaderLabel,
   stickyFirstColumn,
   topOffsetRows,
@@ -370,6 +555,7 @@ function renderHeaderRows({
   displayGrid: MatrixGridProjection;
   sourceColumns: MatrixGridColumn[];
   gridTemplateColumns: string;
+  rowHeaderLayout: MatrixRowHeaderLayout | undefined;
   rowHeaderLabel: string;
   stickyFirstColumn: boolean;
   topOffsetRows: number;
@@ -383,18 +569,12 @@ function renderHeaderRows({
       className="grid"
       style={{ gridTemplateColumns }}
     >
-      <div
-        role="columnheader"
-        className={cn(
-          "sticky left-0 z-50 flex h-10 items-center overflow-hidden border-b border-r bg-muted px-3 text-xs font-medium text-muted-foreground",
-          stickyFirstColumn && "shadow-[1px_0_0_var(--border)]",
-        )}
-        style={{ top: (rowIndex + topOffsetRows) * MATRIX_HEADER_ROW_HEIGHT }}
-      >
-        <span className="min-w-0 truncate">
-          {rowIndex === 0 ? rowHeaderLabel : ""}
-        </span>
-      </div>
+      <HeaderRowHeaderCells
+        layout={rowHeaderLayout}
+        label={rowIndex === 0 ? rowHeaderLabel : ""}
+        stickyFirstColumn={stickyFirstColumn}
+        top={(rowIndex + topOffsetRows) * MATRIX_HEADER_ROW_HEIGHT}
+      />
       {headerRow.cells.map((cell) => (
         <MatrixHeaderCellView
           key={cell.id}
@@ -412,27 +592,30 @@ function renderHeaderRows({
 function renderFlatColumnHeaderRow({
   displayGrid,
   gridTemplateColumns,
+  rowHeaderLayout,
   rowHeaderLabel,
+  stickyFirstColumn,
   topOffsetRows,
   sort,
   onSortChange,
 }: {
   displayGrid: MatrixGridProjection;
   gridTemplateColumns: string;
+  rowHeaderLayout: MatrixRowHeaderLayout | undefined;
   rowHeaderLabel: string;
+  stickyFirstColumn: boolean;
   topOffsetRows: number;
   sort?: MatrixTableSort;
   onSortChange?: (sort: MatrixTableSort | undefined) => void;
 }) {
   return (
     <div role="row" className="grid" style={{ gridTemplateColumns }}>
-      <div
-        role="columnheader"
-        className="sticky left-0 top-0 z-50 flex h-10 items-center overflow-hidden border-b border-r bg-muted px-3 text-xs font-medium text-muted-foreground"
-        style={{ top: topOffsetRows * MATRIX_HEADER_ROW_HEIGHT }}
-      >
-        <span className="truncate">{rowHeaderLabel}</span>
-      </div>
+      <HeaderRowHeaderCells
+        layout={rowHeaderLayout}
+        label={rowHeaderLabel}
+        stickyFirstColumn={stickyFirstColumn}
+        top={topOffsetRows * MATRIX_HEADER_ROW_HEIGHT}
+      />
       {displayGrid.columns.map((column) => (
         <div
           key={column.id}

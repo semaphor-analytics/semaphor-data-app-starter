@@ -14,6 +14,8 @@ export type MatrixPathSegment = MatrixGridRow["rowPath"][number];
 export const MATRIX_ROW_HEADER_WIDTH = 300;
 export const MATRIX_DATA_COLUMN_WIDTH = 164;
 export const MATRIX_HEADER_ROW_HEIGHT = 40;
+export const MATRIX_FLAT_ROW_GROUP_WIDTH = 150;
+export const MATRIX_FLAT_ROW_LEAF_WIDTH = 240;
 
 export type MatrixTableSort = {
   axis: "row" | "column";
