@@ -34,6 +34,7 @@ export type SemaphorViewFilterBadgeProps = {
 
 export type SemaphorViewCardProps = {
   title: string
+  viewId?: string
   description?: string
   state?: SemaphorQueryStateLike
   filters?: SemaphorViewFilterSummary[]
@@ -48,6 +49,7 @@ export type SemaphorViewCardProps = {
 
 export function SemaphorViewCard({
   title,
+  viewId,
   description,
   state,
   filters,
@@ -65,6 +67,7 @@ export function SemaphorViewCard({
     <Card
       className={className}
       data-semaphor-view-card=""
+      data-semaphor-view-id={viewId}
       data-semaphor-filter-state={filterState}
       data-semaphor-active-filter-count={filters?.length ?? 0}
     >

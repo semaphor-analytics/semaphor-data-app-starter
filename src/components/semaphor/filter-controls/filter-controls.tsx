@@ -53,18 +53,20 @@ export function SemaphorMultiSelectFilter({
   const selectedValues = toOptionValueArray(handle.value)
 
   return (
-    <MultiSelectFilter
-      label={label}
-      options={adapter.uiOptions}
-      value={selectedValues.map(semaphorOptionValueKey)}
-      onChange={(nextKeys) => {
-        const nextValues = nextKeys
-          .map((key) => adapter.rawValueByKey.get(key))
-          .filter(isSemaphorOptionValue)
-        handle.setValue(nextValues.length > 0 ? nextValues : undefined)
-      }}
-      {...filterProps}
-    />
+    <div data-semaphor-input-id={handle.id}>
+      <MultiSelectFilter
+        label={label}
+        options={adapter.uiOptions}
+        value={selectedValues.map(semaphorOptionValueKey)}
+        onChange={(nextKeys) => {
+          const nextValues = nextKeys
+            .map((key) => adapter.rawValueByKey.get(key))
+            .filter(isSemaphorOptionValue)
+          handle.setValue(nextValues.length > 0 ? nextValues : undefined)
+        }}
+        {...filterProps}
+      />
+    </div>
   )
 }
 
@@ -80,22 +82,24 @@ export function SemaphorSingleSelectFilter({
   const selectedValue = toSingleOptionValue(handle.value)
 
   return (
-    <SingleSelectFilter
-      label={label}
-      options={adapter.uiOptions}
-      value={
-        selectedValue === undefined
-          ? null
-          : semaphorOptionValueKey(selectedValue)
-      }
-      onChange={(nextKey) => {
-        if (!nextKey) {
-          handle.setValue(undefined)
-          return
+    <div data-semaphor-input-id={handle.id}>
+      <SingleSelectFilter
+        label={label}
+        options={adapter.uiOptions}
+        value={
+          selectedValue === undefined
+            ? null
+            : semaphorOptionValueKey(selectedValue)
         }
-        handle.setValue(adapter.rawValueByKey.get(nextKey))
-      }}
-      {...filterProps}
-    />
+        onChange={(nextKey) => {
+          if (!nextKey) {
+            handle.setValue(undefined)
+            return
+          }
+          handle.setValue(adapter.rawValueByKey.get(nextKey))
+        }}
+        {...filterProps}
+      />
+    </div>
   )
 }

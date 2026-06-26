@@ -907,6 +907,7 @@ function ViewCardPreview() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <SemaphorViewCard
+        viewId="revenue_trend"
         title="Revenue trend"
         description="A generated chart card with active filter scope in the header."
         state={{
@@ -918,6 +919,7 @@ function ViewCardPreview() {
         <MiniAreaChart data={trend} />
       </SemaphorViewCard>
       <SemaphorViewCard
+        viewId="open_opportunities"
         title="Open opportunities"
         description="A card can also make unfiltered views explicit when useful."
         state={{

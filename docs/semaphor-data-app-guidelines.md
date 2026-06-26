@@ -26,9 +26,13 @@ implementation, not a required customer design system. Customer apps may
 replace any visual component with their own shadcn or product components when
 they preserve the same Semaphor semantics.
 
-- Use `SemaphorViewCard` by default for generated starter/eval views, or provide
-  an equivalent shell that exposes `data-semaphor-view-card` and renders query
-  state plus active filter affordances.
+- Use `SemaphorViewCard viewId={...}` by default for generated starter/eval
+  views, or provide an equivalent shell that exposes the generated
+  `data-semaphor-view-id` marker and renders query state plus active filter
+  affordances.
+- Use generated `semaphorViewMarkerProps(viewId)` and
+  `semaphorInputMarkerProps(inputId)` when host-owned components need to carry
+  the same inspectable authoring markers.
 - Use `SemaphorQueryStateBoundary` by default, or equivalent loading, error,
   empty, partial, and refreshing state semantics backed by SDK result state.
 - Use `filter-controls` by default for generated apps, or equivalent controls

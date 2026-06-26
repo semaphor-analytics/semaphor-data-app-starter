@@ -288,6 +288,7 @@ export function ExecutiveScorecardSample() {
 
       <div className="grid gap-4 lg:grid-cols-5">
         <ChartCard
+          viewId="revenue_trend"
           title="Revenue trend"
           description="Use line or area charts when the reading task is direction over time."
           scope={scopedBy(["order_date", "region"])}
@@ -297,6 +298,7 @@ export function ExecutiveScorecardSample() {
           <MiniAreaChart data={trendData} />
         </ChartCard>
         <ChartCard
+          viewId="revenue_by_segment"
           title="Revenue by segment"
           description="Donut charts work for part-to-whole splits with few slices."
           scope={scopedBy(["order_date", "region"])}
@@ -310,6 +312,7 @@ export function ExecutiveScorecardSample() {
 
       <div className="grid gap-4 lg:grid-cols-5">
         <ChartCard
+          viewId="revenue_by_campaign"
           title="Revenue by campaign"
           description="Column charts compare a handful of named categories."
           scope={scopedBy(["order_date", "region", "segment"])}
@@ -319,6 +322,7 @@ export function ExecutiveScorecardSample() {
           <MiniBarChart data={campaignRevenue} />
         </ChartCard>
         <ChartCard
+          viewId="revenue_by_region"
           title="Revenue by region"
           description="Ranked categories should be bounded and sorted."
           scope={scopedBy(["order_date", "segment"])}
@@ -385,6 +389,7 @@ export function MatrixDrilldownSample() {
 /* ------------------------------------------------------------------ */
 
 function ChartCard({
+  viewId,
   title,
   description,
   scope,
@@ -393,6 +398,7 @@ function ChartCard({
   className,
   children,
 }: {
+  viewId: string
   title: string
   description?: string
   scope?: SemaphorViewFilterSummary[]
@@ -403,6 +409,7 @@ function ChartCard({
 }) {
   return (
     <SemaphorViewCard
+      viewId={viewId}
       title={title}
       description={description}
       filters={scope}
