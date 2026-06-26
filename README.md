@@ -116,14 +116,16 @@ import { SemaphorMetricKpiCard } from "@/components/semaphor/metric-kpis"
 
 ```tsx
 const revenue = useSemaphorQuery(
-  queries.revenue,
+  queries.revenue(),
   queryOptionsForView.revenue(inputHandles)
 )
+const metrics = metricValuesForView.revenue(revenue)
 
 return (
   <SemaphorMetricKpiCard
     result={revenue}
     label="Revenue"
+    value={metrics.netRevenue}
     format="currency-compact"
     comparisonLabel="vs previous period"
   />
@@ -133,7 +135,7 @@ return (
 `SemaphorQueryStateBoundary` accepts the same query result object and handles
 loading, empty, partial, failed, and stale states. For multi-measure metric
 queries, pass the same result to `SemaphorMultiMeasureKpis`. Query-level metric
-comparisons belong to the primary `result.value`; explicit secondary
+comparisons belong to the generated primary metric value; explicit secondary
 `measureKey` KPI cards do not reuse that comparison badge.
 
 For tables, prefer the installed TanStack Table dependency and Semaphor

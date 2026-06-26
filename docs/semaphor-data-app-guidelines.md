@@ -18,6 +18,100 @@ design-system instructions.
   SDK query results and generated helpers; they should not reconstruct source
   refs, filter bindings, row keys, table sort identities, or matrix cells.
 
+## Generated API Map
+
+Use the generated contract helpers by responsibility:
+
+- `queries.<view>`: governed SDK query definition for a data-bearing view.
+- `queryOptionsForView.<view>(inputHandles)`: runtime options that apply only
+  the generated filters proven for that view.
+- `inputOptionQueries.<input>`: governed SDK option-list query for a filter.
+- `queryOptionsForInputOptionQuery.<input>(inputHandles)`: runtime options for
+  explicit cascading option dependencies.
+- `tableColumnsForView.<view>`: generated display/sort columns for records
+  views.
+- `rowValuesForView.<view>(row, columns)`: maps one raw runtime row into
+  generated field keys.
+- `rowsForView.<view>(result)`: maps a whole records result into generated row
+  keys and is the preferred table/chart input.
+- `roleValuesForView.<view>(row, columns)`: stable role accessors such as
+  `primaryDimension` and `primaryMeasure` for UI that should survive dimension
+  swaps.
+- `metricValuesForView.<view>(result)`: maps metric result bindings into
+  generated metric keys.
+- `missingMetricMeasuresForView.<view>(result)`: reports requested metrics that
+  runtime did not return.
+
+Do not read `result.value` or raw `result.records` as the generated UI
+contract. Use `metricValuesForView` for KPIs and `rowsForView` for records,
+charts, and tables.
+
+## Live Generated Query Pattern
+
+```tsx
+import {
+  appInputSpecs,
+  createInputHandleMap,
+  inputOptionQueries,
+  metricValuesForView,
+  queries,
+  queryOptionsForInputOptionQuery,
+  queryOptionsForView,
+  rowsForView,
+  tableColumnsForView,
+} from "@/semaphor/generated"
+import { SemaphorMultiSelectFilter } from "@/components/semaphor/filter-controls"
+import { SemaphorMetricKpiCard } from "@/components/semaphor/metric-kpis"
+import { SemaphorServerDataTable } from "@/components/semaphor/server-data-table"
+import {
+  type SemaphorInputHandle,
+  useSemaphorInputs,
+  useSemaphorQuery,
+} from "react-semaphor/data-app-sdk"
+
+export function RevenueOverview() {
+  const handles = useSemaphorInputs(appInputSpecs)
+  const inputHandles = createInputHandleMap(handles)
+
+  const regionOptions = useSemaphorQuery(
+    inputOptionQueries.region,
+    queryOptionsForInputOptionQuery.region(inputHandles),
+  )
+  const kpi = useSemaphorQuery(
+    queries.keyMeasures(),
+    queryOptionsForView.keyMeasures(inputHandles),
+  )
+
+  const metrics = metricValuesForView.keyMeasures(kpi)
+
+  return (
+    <>
+      <SemaphorMultiSelectFilter
+        label="Region"
+        options={regionOptions.options}
+        value={(inputHandles.region?.value as string[] | undefined) ?? []}
+        onChange={(value) =>
+          (inputHandles.region as SemaphorInputHandle<string[]> | undefined)?.setValue(value)
+        }
+      />
+      <SemaphorMetricKpiCard
+        result={kpi}
+        label="Revenue"
+        value={metrics.netRevenue}
+        format="currency-compact"
+      />
+      <SemaphorServerDataTable
+        queryFactory={(state) => queries.topProducts(state)}
+        options={queryOptionsForView.topProducts(inputHandles)}
+        columns={tableColumnsForView.topProducts}
+        rowsAccessor={(result) => rowsForView.topProducts(result)}
+      />
+      {/* Use metrics.netRevenue for custom KPI shells when not using the starter KPI card. */}
+    </>
+  )
+}
+```
+
 ## Default Semaphor Components Or Equivalent Semantics
 
 The default starter includes Semaphor components for query state, view shells,

@@ -40,8 +40,10 @@ export type SemaphorMetricQueryResultLike = Partial<SemaphorMetricQueryResult> &
   SemaphorQueryStateLike & {
     measures?: MetricMap
     metrics?: MetricMap
+    primaryValue?: MetricValue
     delta?: number | null
     deltaPercent?: number | null
+    comparisonKind?: string
     comparisonValue?: MetricValue
   }
 
@@ -78,6 +80,7 @@ export type SemaphorMetricKpiCardProps = {
   result: SemaphorMetricQueryResultLike
   label?: string
   description?: string
+  value?: MetricValue
   measureKey?: string
   format?: SemaphorMetricFormat
   deltaDirectionGood?: "up" | "down"
@@ -95,6 +98,7 @@ export function SemaphorMetricKpiCard({
   result,
   label,
   description,
+  value,
   measureKey,
   format = "number",
   deltaDirectionGood = "up",
@@ -104,7 +108,10 @@ export function SemaphorMetricKpiCard({
   filters,
   className,
 }: SemaphorMetricKpiCardProps) {
-  const resolved = resolveMetricValue(result, measureKey)
+  const resolved =
+    value !== undefined
+      ? { label: undefined, value }
+      : resolveMetricValue(result, measureKey)
   const title = label ?? resolved.label ?? result.intent?.label ?? "Metric"
   const showQueryComparison = !measureKey
   const filterAccessory = filters?.length ? (
@@ -338,7 +345,7 @@ function resolveMetricValue(
     return { label: humanizeMetricKey(measureKey), value: undefined }
   }
 
-  return { label: undefined, value: result.value }
+  return { label: undefined, value: result.primaryValue }
 }
 
 function resolveMetricEntries(

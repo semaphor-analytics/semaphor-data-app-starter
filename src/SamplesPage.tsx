@@ -131,7 +131,7 @@ const componentItems: ComponentItem[] = [
     bestFor: "Executive summaries, scorecards, and compact metric rows.",
     sourcePath: "src/components/semaphor/metric-kpis",
     semantics: [
-      "Prefer result.value for primary KPI cards.",
+      "Prefer generated metric accessors or result.primaryValue for primary KPI cards.",
       "Use measureKey only for explicitly selected secondary measures.",
       "Do not reuse query-level comparison badges for secondary measures.",
     ],

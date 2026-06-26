@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "test": "vitest run --passWithNoTests",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b --noEmit",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,7 +27,7 @@
     "react": "^19.2.6",
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.6",
-    "react-semaphor": "^0.1.409",
+    "react-semaphor": "^0.1.419",
     "recharts": "^3.8.0",
     "shadcn": "^4.8.3",
     "tailwind-merge": "^3.6.0",

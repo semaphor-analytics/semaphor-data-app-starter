@@ -26,6 +26,10 @@ server sort identity.
 `queryFactory`, `columns`, and `sort` state. Passing a generated query factory
 and matching `tableColumnsForView.<view>` should not require casts or
 hand-authored sort adapters.
+When rendering generated Data App records, also pass the generated
+`rowsForView.<view>` helper or a `rowAccessor` built from
+`rowValuesForView.<view>`. Do not combine generated table columns with raw
+`result.records`, because runtime column keys are transport details.
 
 Use the full component when the host app uses compatible shadcn/base UI
 primitives. If the host has another table/grid/design system, adapt the

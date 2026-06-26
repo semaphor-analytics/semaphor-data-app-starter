@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   type SemaphorQueryRuntimeOptions,
+  type SemaphorRecordsQueryResult,
   type SemaphorRecordsQueryDefinition,
   useSemaphorQuery,
 } from "react-semaphor/data-app-sdk";
@@ -45,6 +46,12 @@ export type SemaphorServerDataTableProps<
     options?: SemaphorQueryRuntimeOptions;
     initialPageSize?: number;
     columns?: readonly ServerDataTableColumn<TSortKey>[];
+    rowAccessor?: (
+      row: Record<string, unknown>,
+      columns: SemaphorRecordsQueryResult["columns"],
+    ) => TRow;
+    rowsAccessor?: (result: SemaphorRecordsQueryResult) => TRow[];
+    totalRowAccessor?: (result: SemaphorRecordsQueryResult) => ServerDataTableRow | undefined;
   };
 
 export function SemaphorServerDataTable<
@@ -56,6 +63,9 @@ export function SemaphorServerDataTable<
   initialPageSize = 25,
   columns: providedColumns,
   totalRow: providedTotalRow,
+  rowAccessor,
+  rowsAccessor,
+  totalRowAccessor,
   ...viewProps
 }: SemaphorServerDataTableProps<TRow, TSortKey>) {
   const runtimeInputKey = stableRuntimeInputKey(options?.inputs);
@@ -80,8 +90,18 @@ export function SemaphorServerDataTable<
     () => queryFactory({ page, pageSize, sort }),
     [page, pageSize, queryFactory, sort],
   );
-  const result = useSemaphorQuery<TRow>(query, options);
-  const rows = useMemo(() => result.records ?? [], [result.records]);
+  const result = useSemaphorQuery(query, options);
+  const rows = useMemo(() => {
+    if (rowsAccessor) {
+      return rowsAccessor(result);
+    }
+    if (rowAccessor) {
+      return (result.records ?? []).map((row) =>
+        rowAccessor(row, result.columns),
+      );
+    }
+    return (result.records ?? []) as TRow[];
+  }, [result, rowAccessor, rowsAccessor]);
 
   const columns = useMemo(
     () => providedColumns ?? result.columns?.map(toServerDataTableColumn) ?? [],
@@ -95,8 +115,8 @@ export function SemaphorServerDataTable<
   });
 
   const totalRow = useMemo(
-    () => providedTotalRow ?? result.totals?.row,
-    [providedTotalRow, result.totals],
+    () => providedTotalRow ?? totalRowAccessor?.(result) ?? result.totals?.row,
+    [providedTotalRow, result, totalRowAccessor],
   );
   const totalRowLabel =
     viewProps.totalRowLabel ??

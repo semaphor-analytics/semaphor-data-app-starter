@@ -85,7 +85,8 @@ Every data-bearing generated view should preserve these affordances:
   per-card filter scope cues.
 - `filter-controls` or equivalent controls backed by generated input handles.
 - `SemaphorMetricKpiCard` / `SemaphorMultiMeasureKpis` or equivalent KPI
-  rendering that distinguishes primary `result.value` from secondary measures.
+  rendering that uses generated `metricValuesForView` accessors or explicit
+  `result.primaryValue` for single-measure SDK results.
 - `ServerDataTableView` or equivalent server-owned table behavior for large,
   sortable, paginated, or exploratory records.
 - `MatrixTableView` or equivalent matrix behavior for governed matrix results.
