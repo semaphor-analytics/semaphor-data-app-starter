@@ -187,18 +187,6 @@ export function DateRangePicker({
                 </li>
               )
             })}
-            <li className="mt-0.5 border-t pt-1.5">
-              <span
-                className={cn(
-                  "block px-2.5 py-1.5 text-xs",
-                  activePreset === "custom"
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground"
-                )}
-              >
-                Custom range
-              </span>
-            </li>
           </ul>
           <div className="p-2">
             <Calendar

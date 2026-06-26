@@ -56,6 +56,62 @@ Data Apps should feel like dense analytics tools, not marketing pages.
 - Use `tabular-nums` for displayed measures, counts, currencies, percentages,
   dates, and table totals.
 
+## Canonical Exemplars
+
+`/samples` is the bar, not just a gallery. Before building, open it and copy the
+closest pattern instead of inventing layout.
+
+Dashboard patterns (Dashboards in `/samples`):
+
+- **Executive scorecard**: page header, filter bar, KPI row, a chart grid, and a
+  bounded records table. The default for "how are we doing."
+- **Operations table**: page header, scoped filters, and one server-backed table
+  as the primary workspace.
+- **Matrix drilldown**: page header, scoped filters, KPI context, and a matrix
+  table as the primary workspace.
+
+Component exemplars (Components in `/samples`):
+
+- KPIs: `Metric KPIs`. Charts: `Charts`. Filters: `Filter Controls`.
+- Tables: `Server Data Table`, `Matrix Table`.
+- State: `Query State Boundary`, `View Card`.
+
+Good first run: dense, scannable, data-first, formatted numbers, every chart and
+table formatter-aware. Avoid: marketing heroes, oversized decorative cards, broad
+gradients, unbounded card grids, charts with raw/unformatted tooltips, and
+hand-rolled controls when a starter component exists.
+
+## Tooltips
+
+There are two kinds of tooltip. Treat them differently.
+
+**Chart tooltips** (hover on a data point) belong to the chart components. Use
+the Semaphor chart wrappers; never add a raw Recharts `<Tooltip>`. Pass
+`valueFormatter`, and `labelFormatter` for date or coded dimensions, so the
+tooltip shows the same formatted value as the axis.
+
+**UI help tooltips** (hover on an icon, label, or control) use `InfoTip` from
+`src/components/semaphor/info-tip`, which wraps the `ui/tooltip.tsx` primitive.
+
+Use a help tooltip for:
+
+- icon-only buttons that need an accessible name,
+- a metric or measure definition next to a KPI or column header,
+- a truncated label whose full text matters,
+- why a control is disabled.
+
+Do not:
+
+- hide information the user needs to finish the task inside a tooltip,
+- put links, buttons, or other interactive content in a tooltip,
+- restate a label that is already visible,
+- use a tooltip for persistent or multi-line detail (e.g. an active-filter
+  summary); that belongs in a Popover, optionally with `openOnHover`,
+- override tooltip colors per usage. Re-theme through `bg-popover`/`--popover-*`.
+
+Mechanics: one short sentence, sentence case, default side `top`, and let the
+shared 150ms delay stand.
+
 ## Type And Spacing Roles
 
 Pick text size by role instead of eyeballing:
@@ -90,6 +146,12 @@ Every data-bearing generated view should preserve these affordances:
 - `ServerDataTableView` or equivalent server-owned table behavior for large,
   sortable, paginated, or exploratory records.
 - `MatrixTableView` or equivalent matrix behavior for governed matrix results.
+- Semaphor chart wrappers (`SemaphorLineChart`, `SemaphorAreaChart`,
+  `SemaphorBarChart`, `SemaphorPieChart`, `SemaphorRadarChart`) for
+  visualizations, always with a `valueFormatter` so the axis and the tooltip
+  show the same number. Do not hand-roll Recharts in view code.
+- `InfoTip` for inline help (metric definitions, icon-button names) instead of
+  ad-hoc per-view tooltips.
 
 ## What Not To Do
 

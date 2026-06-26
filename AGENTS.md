@@ -129,6 +129,10 @@ primitives:
   components. Use these with
   `useSemaphorQuery(queries.someView, queryOptionsForView.someView(inputHandles))`
   results instead of mapping metric payloads into static sample KPI props.
+- `charts`: themed chart wrappers (`SemaphorLineChart`, `SemaphorAreaChart`,
+  `SemaphorBarChart`, `SemaphorPieChart`, `SemaphorRadarChart`) for generated
+  rows. Pass generated field keys and a `valueFormatter` so axes and tooltips
+  match; do not hand-roll Recharts in view code.
 - `filter-controls`: Semaphor-aware date range, single-select, multi-select,
   and active filter summary components. Use these for generated
   Semaphor-backed filters so raw typed option values are preserved.
@@ -136,6 +140,9 @@ primitives:
   drill-through, exploratory, paginated, or sortable tables.
 - `matrix-table`: governed matrix/pivot table for matrix query results.
 - `query-state`: lower-level presentation states for custom non-SDK views.
+- `info-tip`: standard `InfoTip` help affordance for metric definitions,
+  icon-button accessible names, and truncated labels. Use it instead of ad-hoc
+  per-view tooltips.
 
 Use `src/components/ui/*` shadcn primitives for lower-level UI controls.
 
@@ -202,6 +209,8 @@ governed analytics.
   `src/components/semaphor/server-data-table` for
   operational/detail/exploratory/paginated/sortable tables. Use simple bounded
   table markup only for small top-N or summary tables.
+- Use the Semaphor chart wrappers for every chart and pass a `valueFormatter`;
+  do not add raw Recharts. Use `InfoTip` for inline help, not one-off tooltips.
 - Do not add unrelated dependencies when local shadcn/sample components can
   express the UI.
 

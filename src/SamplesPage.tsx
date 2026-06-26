@@ -71,12 +71,16 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTheme } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
-import { MiniAreaChart } from "@/samples/composed-samples"
+import {
+  SemaphorAreaChart,
+  numberValue,
+} from "@/components/semaphor/charts"
 import {
   dashboardSamples,
   type DashboardSample,
   type DashboardSampleId,
 } from "@/samples/dashboard-samples"
+import { ChartsBasicExample } from "@/samples/examples/charts-basic"
 import {
   MatrixTableBasicExample,
   type MatrixTableExampleControls,
@@ -86,17 +90,27 @@ import {
   type ServerTableExampleControls,
 } from "@/samples/examples/server-data-table-basic"
 
+const currencyCompactFormat = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+})
+const formatCurrencyCompact = (value: unknown) =>
+  currencyCompactFormat.format(numberValue(value))
+
 type ComponentItemId =
   | "data-app-guidelines"
   | "query-state-boundary"
   | "view-card"
   | "metric-kpis"
+  | "charts"
   | "filter-controls"
   | "server-data-table"
   | "matrix-table"
   | "query-state"
 
-type ComponentCategory = "State" | "Metrics" | "Inputs" | "Tables"
+type ComponentCategory = "State" | "Metrics" | "Charts" | "Inputs" | "Tables"
 
 type ComponentItem = {
   id: ComponentItemId
@@ -115,6 +129,7 @@ type Selection =
 
 const CATEGORY_ORDER: ComponentCategory[] = [
   "Metrics",
+  "Charts",
   "Inputs",
   "Tables",
   "State",
@@ -134,6 +149,21 @@ const componentItems: ComponentItem[] = [
       "Prefer generated metric accessors or result.primaryValue for primary KPI cards.",
       "Use measureKey only for explicitly selected secondary measures.",
       "Do not reuse query-level comparison badges for secondary measures.",
+    ],
+  },
+  {
+    id: "charts",
+    title: "Charts",
+    category: "Charts",
+    icon: LineChartIcon,
+    summary:
+      "Line, area, bar, donut, and radar wrappers with themed tooltips, legends, and value formatters for generated rows.",
+    bestFor: "Trends, comparisons, composition, and multi-measure views.",
+    sourcePath: "src/components/semaphor/charts",
+    semantics: [
+      "Pass generated rows (rowsForView) and field keys, not display labels.",
+      "Set valueFormatter so axes and tooltips render the same number.",
+      "Theme with --chart-* tokens; do not hand-roll Recharts in views.",
     ],
   },
   {
@@ -589,18 +619,13 @@ function ThemeSwitcher() {
 function DashboardCanvas({ sample }: { sample: DashboardSample }) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Badge variant="secondary" className="w-fit">
-          {sample.eyebrow}
-        </Badge>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {sample.heading}
-          </h1>
-          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            {sample.description}
-          </p>
-        </div>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {sample.heading}
+        </h1>
+        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+          {sample.description}
+        </p>
       </div>
 
       {sample.bleed ? (
@@ -723,6 +748,8 @@ function renderPreview({
       )
     case "metric-kpis":
       return <MetricKpisPreview />
+    case "charts":
+      return <ChartsBasicExample />
     case "filter-controls":
       return <FilterControlsPreview />
     case "view-card":
@@ -840,6 +867,7 @@ function MatrixTablePreview({
 function MetricKpisPreview() {
   const metricResult = {
     status: "success" as const,
+    primaryValue: 842500,
     value: 842500,
     deltaPercent: 12.4,
     measures: {
@@ -860,7 +888,7 @@ function MetricKpisPreview() {
       <SemaphorMetricKpiCard
         result={metricResult}
         label="Revenue"
-        description="Primary SDK metric value"
+        description="Total revenue in the selected period"
         format="currency-compact"
         trend={[612000, 668000, 705000, 742000, 798000, 842500]}
         filters={previewScope}
@@ -868,7 +896,7 @@ function MetricKpisPreview() {
       <SemaphorMultiMeasureKpis
         result={metricResult}
         title="Performance summary"
-        description="Secondary measures render from result.measures without reusing the primary comparison badge."
+        description="Key measures for the selected period."
         filters={previewScope}
         measures={[
           {
@@ -916,7 +944,14 @@ function ViewCardPreview() {
         }}
         filters={filters}
       >
-        <MiniAreaChart data={trend} />
+        <SemaphorAreaChart
+          rows={trend}
+          dimensionKey="label"
+          valueKey="revenue"
+          valueLabel="Revenue"
+          valueFormatter={formatCurrencyCompact}
+          className="h-[200px] w-full"
+        />
       </SemaphorViewCard>
       <SemaphorViewCard
         viewId="open_opportunities"

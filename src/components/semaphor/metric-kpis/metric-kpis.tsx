@@ -258,7 +258,7 @@ export function SemaphorMultiMeasureKpis({
           </CardAction>
         ) : null}
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-1 flex-col justify-center">
         <SemaphorQueryStateBoundary state={result}>
           <div
             className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(var(--semaphor-kpi-columns),minmax(0,1fr))] sm:gap-0 sm:divide-x sm:divide-border"

@@ -134,6 +134,9 @@ they preserve the same Semaphor semantics.
 - Use `metric-kpis`, `server-data-table`, and `matrix-table` by default for
   matching SDK result shapes. Custom components must still consume SDK results
   directly and preserve server-owned pagination, sorting, and matrix semantics.
+- Use the Semaphor chart wrappers (`charts`) for visualizations, fed by
+  `rowsForView` and generated field keys, and pass a `valueFormatter` so axes and
+  tooltips render the same number. Do not hand-roll Recharts in view code.
 
 ## Filter Semantics
 

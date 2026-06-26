@@ -93,6 +93,8 @@ export function SemaphorActiveFilterSummaryBadge({
   return (
     <Popover>
       <PopoverTrigger
+        openOnHover
+        delay={150}
         render={
           <button
             type="button"
@@ -106,12 +108,12 @@ export function SemaphorActiveFilterSummaryBadge({
         <FunnelIcon className="size-3" />
         <span>{filters.length === 1 ? "Filtered" : `${filters.length} filters`}</span>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-2">
+      <PopoverContent align="end" className="w-64 p-2">
         <div className="flex flex-col gap-1.5">
           {filters.map((filter) => (
             <div
               key={filter.id}
-              className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-xs"
+              className="flex items-center justify-between gap-3 text-xs"
             >
               <span className="min-w-0 truncate text-muted-foreground">
                 {filter.label}

@@ -128,6 +128,7 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
+  valueFormatter,
 }: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
   React.ComponentProps<"div"> & {
     hideLabel?: boolean
@@ -135,6 +136,11 @@ function ChartTooltipContent({
     indicator?: "line" | "dot" | "dashed"
     nameKey?: string
     labelKey?: string
+    /**
+     * Optional formatter for the value text only, keeping the default
+     * indicator and label. Defaults to `toLocaleString()` for numbers.
+     */
+    valueFormatter?: (value: unknown, name: string | number) => React.ReactNode
   } & Omit<
     RechartsPrimitive.DefaultTooltipContentProps<
       TooltipValueType,
@@ -240,7 +246,7 @@ function ChartTooltipContent({
                     )}
                     <div
                       className={cn(
-                        "flex flex-1 justify-between leading-none",
+                        "flex flex-1 justify-between gap-4 leading-none",
                         nestLabel ? "items-end" : "items-center"
                       )}
                     >
@@ -252,9 +258,11 @@ function ChartTooltipContent({
                       </div>
                       {item.value != null && (
                         <span className="font-mono font-medium text-foreground tabular-nums">
-                          {typeof item.value === "number"
-                            ? item.value.toLocaleString()
-                            : String(item.value)}
+                          {valueFormatter
+                            ? valueFormatter(item.value, item.name ?? "")
+                            : typeof item.value === "number"
+                              ? item.value.toLocaleString()
+                              : String(item.value)}
                         </span>
                       )}
                     </div>

@@ -1,19 +1,30 @@
 export {
   buildSemaphorChartRows,
+  chartColorAt,
   numberValue,
+  pivotChartRows,
+  resolveChartSeries,
   stringValue,
+  sumValues,
 } from "./core"
 export type {
+  ResolvedChartSeries,
+  SemaphorChartLabelFormatter,
   SemaphorChartRow,
+  SemaphorChartSeries,
   SemaphorChartValueFormatter,
 } from "./core"
 export {
+  SemaphorAreaChart,
   SemaphorBarChart,
-  SemaphorDonutChart,
   SemaphorLineChart,
+  SemaphorPieChart,
+  SemaphorRadarChart,
 } from "./charts"
 export type {
+  SemaphorAreaChartProps,
   SemaphorBarChartProps,
-  SemaphorDonutChartProps,
   SemaphorLineChartProps,
+  SemaphorPieChartProps,
+  SemaphorRadarChartProps,
 } from "./charts"
