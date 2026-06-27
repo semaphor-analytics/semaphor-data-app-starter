@@ -136,6 +136,7 @@ function metricResultFor(demoState: DashboardDemoState) {
   const ready = {
     primaryValue: 2002900,
     value: 2002900,
+    comparisonKind: "previous_period" as const,
     deltaPercent: 12.4,
     measures,
     records: ordersRows.slice(0, 6),

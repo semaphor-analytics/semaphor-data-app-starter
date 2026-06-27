@@ -869,6 +869,7 @@ function MetricKpisPreview() {
     status: "success" as const,
     primaryValue: 842500,
     value: 842500,
+    comparisonKind: "previous_period" as const,
     deltaPercent: 12.4,
     measures: {
       revenue: 842500,
@@ -890,6 +891,7 @@ function MetricKpisPreview() {
         label="Revenue"
         description="Total revenue in the selected period"
         format="currency-compact"
+        comparisonLabel="vs previous period"
         trend={[612000, 668000, 705000, 742000, 798000, 842500]}
         filters={previewScope}
       />

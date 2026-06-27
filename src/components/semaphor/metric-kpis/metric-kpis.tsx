@@ -27,7 +27,7 @@ import {
 } from "../view-card"
 
 type MetricValue = number | string | null | undefined
-type MetricMap = Record<string, MetricValue>
+type MetricMap = Readonly<Record<string, MetricValue>>
 
 export type SemaphorMetricFormat =
   | "currency"
@@ -36,7 +36,12 @@ export type SemaphorMetricFormat =
   | "percent"
   | "raw"
 
-export type SemaphorMetricQueryResultLike = Partial<SemaphorMetricQueryResult> &
+type SemaphorMetricQueryResultPayloadLike = Omit<
+  Partial<SemaphorMetricQueryResult>,
+  "comparisonValue" | "measures" | "metrics" | "primaryValue" | "value"
+>
+
+export type SemaphorMetricQueryResultLike = SemaphorMetricQueryResultPayloadLike &
   SemaphorQueryStateLike & {
     measures?: MetricMap
     metrics?: MetricMap
@@ -85,6 +90,8 @@ export type SemaphorMetricKpiCardProps = {
   format?: SemaphorMetricFormat
   deltaDirectionGood?: "up" | "down"
   comparisonLabel?: string
+  /** Controls comparison badge rendering. Defaults to true for primary KPI cards only when the SDK result includes comparison evidence. */
+  showComparison?: boolean
   /** Optional trend series; renders a compact sparkline under the value. */
   trend?: number[]
   /** Optional accessory rendered in the header corner (e.g. filter scope). */
@@ -103,6 +110,7 @@ export function SemaphorMetricKpiCard({
   format = "number",
   deltaDirectionGood = "up",
   comparisonLabel,
+  showComparison,
   trend,
   headerAccessory,
   filters,
@@ -113,7 +121,11 @@ export function SemaphorMetricKpiCard({
       ? { label: undefined, value }
       : resolveMetricValue(result, measureKey)
   const title = label ?? resolved.label ?? result.intent?.label ?? "Metric"
-  const showQueryComparison = !measureKey
+  const showQueryComparison = shouldShowMetricComparison(
+    result,
+    showComparison,
+    measureKey,
+  )
   const filterAccessory = filters?.length ? (
     <SemaphorViewFilterBadge compact filters={filters} />
   ) : null
@@ -159,6 +171,17 @@ export function SemaphorMetricKpiCard({
       </CardContent>
     </Card>
   )
+}
+
+function shouldShowMetricComparison(
+  result: SemaphorMetricQueryResultLike,
+  showComparison?: boolean,
+  measureKey?: string,
+) {
+  if (showComparison !== undefined) {
+    return showComparison
+  }
+  return Boolean(result.comparisonKind) && !measureKey
 }
 
 function SemaphorMetricSparkline({
@@ -213,7 +236,7 @@ export type SemaphorMultiMeasureKpisProps = {
   result: SemaphorMetricQueryResultLike
   title: string
   description?: string
-  measures?: SemaphorMultiMeasureKpiConfig[]
+  measures?: readonly SemaphorMultiMeasureKpiConfig[]
   /** Direction that counts as good for the delta colors. Defaults to "up". */
   deltaDirectionGood?: "up" | "down"
   /** Optional accessory rendered in the header corner (e.g. filter scope). */
@@ -350,7 +373,7 @@ function resolveMetricValue(
 
 function resolveMetricEntries(
   result: SemaphorMetricQueryResultLike,
-  measures?: SemaphorMultiMeasureKpiConfig[]
+  measures?: readonly SemaphorMultiMeasureKpiConfig[]
 ) {
   const map = readMetricMap(result)
   const configs =
